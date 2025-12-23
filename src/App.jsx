@@ -9,6 +9,7 @@ import * as XLSX from 'xlsx';
 import { PDFReport } from './PDFReport';
 import logoDnlite from './assets/logo_dnlite.png';
 import logoGlucare from './assets/logo_glucare.png';
+import logoNewcl from './assets/logo_newcl.jpg';
 
 // -----------------------------------------------------------------------------
 // Component: DNlite Report Generator V23.1 (Vector PDF Version)
@@ -118,8 +119,9 @@ export default function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState("");
 
-  const [logo, setLogo] = useState(null);
-  const [companyLogo, setCompanyLogo] = useState(null);
+
+  const [logo, setLogo] = useState(safeStorage.getItem('dnlite_report_logo') || logoDnlite);
+  const [companyLogo, setCompanyLogo] = useState(safeStorage.getItem('dnlite_company_logo_v2') || logoNewcl);
 
   const reportConfig = {
     title: 'DNlite Test Report',
@@ -127,12 +129,19 @@ export default function App() {
     date: new Date().toISOString().split('T')[0],
   };
 
+  // The useEffect for loading logos is now redundant for initial load due to useState initialization
+  // but kept for consistency if there were other side effects.
+  // For this specific change, it could be removed if its only purpose was initial logo loading.
   useEffect(() => {
+    // If useState already initializes from safeStorage, this effect might only be needed for
+    // cases where safeStorage is updated externally or if initial state was null.
+    // Given the new useState, this effect's primary role for initial load is diminished.
+    // However, keeping it doesn't hurt and might cover edge cases or future changes.
     const savedLogo = safeStorage.getItem('dnlite_report_logo');
-    const savedCompanyLogo = safeStorage.getItem('dnlite_company_logo');
-    if (savedLogo) setLogo(savedLogo);
-    if (savedCompanyLogo) setCompanyLogo(savedCompanyLogo);
-  }, []);
+    const savedCompanyLogo = safeStorage.getItem('dnlite_company_logo_v2');
+    if (savedLogo && savedLogo !== logo) setLogo(savedLogo);
+    if (savedCompanyLogo && savedCompanyLogo !== companyLogo) setCompanyLogo(savedCompanyLogo);
+  }, []); // Empty dependency array means it runs once on mount
 
   const processData = (rawData) => {
     if (!rawData || rawData.length === 0) return alert("無資料 (No Data)");
@@ -229,7 +238,7 @@ export default function App() {
           safeStorage.setItem('dnlite_report_logo', base64);
         } else {
           setCompanyLogo(base64);
-          safeStorage.setItem('dnlite_company_logo', base64);
+          safeStorage.setItem('dnlite_company_logo_v2', base64);
         }
       };
       reader.readAsDataURL(file);
@@ -300,7 +309,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 space-y-8">
         <div className="text-center">
-          <h1 className="text-4xl font-extrabold text-slate-800">DNlite Report <span style={{ color: COLORS.teal }}>V23.1</span></h1>
+          <h1 className="text-4xl font-extrabold text-slate-800">DNlite Report for <span style={{ color: COLORS.teal }}>NEWCL 欣奕醫事檢驗所</span></h1>
           <p className="text-slate-500 mt-2">Vector PDF Engine</p>
         </div>
 
@@ -365,7 +374,7 @@ export default function App() {
                     <div className="h-16 w-auto max-w-[220px] flex items-center mb-2">
                       {logo ? <img src={logo} alt="Logo" className="h-full object-contain object-left" /> : <DefaultDNliteLogo />}
                     </div>
-                    <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">DNlite Test Report</h1>
+                    <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-tight"><span style={{ color: COLORS.teal }}>遠腎佳</span>糖尿病腎病預後檢測</h1>
                   </div>
                   <div className="h-16 w-[180px] flex justify-end items-start mt-2">
                     {companyLogo ? <img src={companyLogo} alt="Company Logo" className="h-full object-contain object-right" /> : <div className="text-xs text-slate-300 border border-dashed border-slate-300 rounded px-2 py-4 w-full text-center">Company Logo Area</div>}
@@ -375,33 +384,33 @@ export default function App() {
                 {/* Content */}
                 <div className="content-section">
                   <div className="mb-8">
-                    <h3 className="text-sm font-bold text-slate-800 mb-2 border-l-4 pl-2" style={{ borderColor: COLORS.teal }}>Personal Information</h3>
+                    <h3 className="text-sm font-bold text-slate-800 mb-2 border-l-4 pl-2" style={{ borderColor: COLORS.teal }}>個人資訊</h3>
                     <div className="grid grid-cols-3 border-t border-l border-slate-300">
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600" style={{ backgroundColor: '#dce3eb' }}>Clinic</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600" style={{ backgroundColor: '#dce3eb' }}>Sampling Date</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600" style={{ backgroundColor: '#dce3eb' }}>Report Number</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800">{person._unit}</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800">{person._date}</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800">{person._reportNo}</div>
+                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>診所/單位</div>
+                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>採檢日期</div>
+                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>報告編號</div>
+                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 text-center">{person._unit}</div>
+                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 text-center">{person._date}</div>
+                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 text-center">{person._reportNo}</div>
 
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600" style={{ backgroundColor: '#dce3eb' }}>Patient / MRN</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600" style={{ backgroundColor: '#dce3eb' }}>Gender</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600" style={{ backgroundColor: '#dce3eb' }}>Age</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 font-bold">{person._name} <span className="font-normal text-slate-400">/ {person._mrn}</span></div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800">{person._gender}</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800">{person._age}</div>
+                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>姓名 / 病歷號</div>
+                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>性別</div>
+                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>年齡</div>
+                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 font-bold text-center">{person._name} <span className="font-normal text-slate-400">/ {person._mrn}</span></div>
+                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 text-center">{person._gender}</div>
+                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 text-center">{person._age}</div>
                     </div>
                   </div>
 
                   <div className="mb-6">
-                    <h3 className="text-sm font-bold text-slate-800 mb-2 border-l-4 pl-2" style={{ borderColor: COLORS.teal }}>DNlite Level</h3>
+                    <h3 className="text-sm font-bold text-slate-800 mb-2 border-l-4 pl-2" style={{ borderColor: COLORS.teal }}>DNlite 檢測結果</h3>
                     <table className="w-full text-sm border-collapse border border-slate-300">
                       <thead style={{ backgroundColor: '#cbd5e1' }}>
                         <tr>
-                          <th className="border border-slate-300 p-2 text-left w-1/4">Item</th>
-                          <th className="border border-slate-300 p-2 text-center">Test Result</th>
-                          <th className="border border-slate-300 p-2 text-center w-1/6">Unit</th>
-                          <th className="border border-slate-300 p-2 text-left w-1/3">Remark</th>
+                          <th className="border border-slate-300 p-2 text-left w-1/4">檢測項目</th>
+                          <th className="border border-slate-300 p-2 text-center">結果</th>
+                          <th className="border border-slate-300 p-2 text-center w-1/6">單位</th>
+                          <th className="border border-slate-300 p-2 text-left w-1/3 text-center">備註</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -415,13 +424,13 @@ export default function App() {
                           <td className="border border-slate-300 p-2 font-bold text-slate-900" style={{ backgroundColor: '#dce3eb' }}>Urine creatinine (UCr)</td>
                           <td className="border border-slate-300 p-2 font-bold text-center">{person._disp_ucr}</td>
                           <td className="border border-slate-300 p-2 text-center">mg/dL</td>
-                          <td className="border border-slate-300 p-2 text-slate-500">Normal Range: 0.60-2.50</td>
+                          <td className="border border-slate-300 p-2 text-slate-500 text-center"><span className="text-xs">參考區間: 0.60-2.50</span></td>
                         </tr>
                         <tr style={{ backgroundColor: isRisk ? COLORS.bgRed : COLORS.bgTeal }}>
                           <td className="border border-slate-300 p-2 font-bold whitespace-nowrap text-slate-900" style={{ backgroundColor: '#dce3eb' }}>DNlite (uPTM-FetA/UCr)</td>
                           <td className="border border-slate-300 p-2 font-bold text-center" style={{ color: statusColor }}>{person._disp_dnlite}</td>
                           <td className="border border-slate-300 p-2 text-center">ng/mg</td>
-                          <td className="border border-slate-300 p-2 font-bold text-slate-500">Cut-off: 7.53</td>
+                          <td className="border border-slate-300 p-2 font-bold text-slate-500 text-center"><span className="text-xs">臨床建議值: 7.53</span></td>
                         </tr>
                       </tbody>
                     </table>
@@ -430,22 +439,22 @@ export default function App() {
                   <div className="mb-6 grid grid-cols-2 gap-8 items-center">
                     <div className="w-full flex justify-center"><GaugeChart value={dnliteVal} threshold={7.53} max={300} /></div>
                     <div className="flex flex-col justify-center space-y-4">
-                      <div><div className="text-sm text-slate-500 mb-1">Your DNlite level is</div><div className="text-3xl font-extrabold" style={{ color: statusColor }}>{person._disp_dnlite} <span className="text-sm font-medium text-slate-400">ng/mg</span></div></div>
-                      <div><div className="text-sm text-slate-500 mb-2">Categorized as:</div><div className="py-2 px-5 text-white text-lg font-bold rounded-lg flex items-center gap-2 shadow-sm w-fit" style={{ backgroundColor: statusColor }}>{isRisk ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}{isRisk ? "High Risk" : "Low Risk"}</div></div>
+                      <div><div className="text-sm text-slate-500 mb-1">您的 DNlite 數值為</div><div className="text-3xl font-extrabold" style={{ color: statusColor }}>{person._disp_dnlite} <span className="text-sm font-medium text-slate-400">ng/mg</span></div></div>
+                      <div><div className="text-sm text-slate-500 mb-2">風險評估:</div><div className="py-2 px-5 text-white text-lg font-bold rounded-lg flex items-center gap-2 shadow-sm w-fit" style={{ backgroundColor: statusColor }}>{isRisk ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}{isRisk ? "高度風險" : "低度風險"}</div></div>
                     </div>
                   </div>
 
                   <div className="flex-1">
                     <div className="border rounded-xl p-6 bg-white" style={{ borderColor: statusColor, backgroundColor: isRisk ? COLORS.bgRed : COLORS.bgTeal }}>
-                      <p className="text-sm text-slate-700 leading-relaxed text-justify">{isRisk ? "Your kidney function is in a condition that may negatively impact your health. Please contact your physician as soon as possible to discuss and develop a personalized health management plan. By actively following preventive measures, you can reduce the risk of kidney-related complications. It is recommended to undergo the DNlite kidney function test every 3 to 6 months." : "Your kidney function is within the normal range. Please continue with your current blood glucose monitoring, medication management, and complication screening plan. Undergo the DNlite kidney function test once a year to assess your risk of kidney disease in a timely manner."}</p>
+                      <p className="text-sm text-slate-700 leading-relaxed text-justify">{isRisk ? "您的腎功能狀況可能對健康產生負面影響。請盡快聯繫醫師討論並制定個人化的健康管理計畫。透過積極的預防措施，您可以降低腎臟相關併發症的風險。建議每 3 到 6 個月進行一次 DNlite 腎功能檢測。" : "您的腎功能處於正常範圍。請繼續目前的血糖監測、藥物管理和併發症篩檢計畫。建議每年進行一次 DNlite 腎功能檢測，以及時評估腎病風險。"}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="footer-section">
                   <div className="flex justify-between items-end h-full pt-4">
-                    <div><div className="text-xs text-slate-400 mb-2">Lab. Director</div><div className="font-serif text-xl italic text-slate-800 border-b border-slate-300 pb-1 px-2 inline-block min-w-[150px]">{reportConfig.inspector}</div></div>
-                    <div className="text-right"><div className="text-xs text-slate-400 mb-2">Report Date</div><div className="text-sm text-slate-800 font-medium">{reportConfig.date}</div></div>
+                    <div><div className="text-xs text-slate-400 mb-2">實驗室主管</div><div className="font-serif text-xl italic text-slate-800 border-b border-slate-300 pb-1 px-2 inline-block min-w-[150px] text-center">{reportConfig.inspector}</div></div>
+                    <div className="text-right"><div className="text-xs text-slate-400 mb-2">報告日期</div><div className="text-sm text-slate-800 font-medium">{reportConfig.date}</div></div>
                   </div>
                 </div>
               </div>
@@ -453,37 +462,37 @@ export default function App() {
               {/* --- PAGE 2 --- */}
               <div className="report-sheet relative box-border overflow-hidden flex flex-col">
                 <div className="h-[90px] px-10 pt-8 flex justify-between items-center bg-white flex-none">
-                  <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Definition of Risk</h1>
-                  <div className="font-bold text-sm border px-3 py-1 rounded" style={{ color: COLORS.teal, borderColor: COLORS.teal }}>Appendix</div>
+                  <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">風險定義</h1>
+                  <div className="font-bold text-sm border px-3 py-1 rounded" style={{ color: COLORS.teal, borderColor: COLORS.teal }}>附錄</div>
                 </div>
                 <div className="flex-1 px-10 py-10 flex flex-col justify-between">
                   <div>
                     <div className="grid grid-cols-2 gap-10 mb-4">
                       <div className="flex flex-col">
-                        <h3 className="text-base font-bold text-slate-800 mb-3 border-l-4 border-slate-800 pl-3">Renal Function Deterioration</h3>
-                        <p className="text-xs text-slate-600 leading-relaxed mb-6 text-justify h-12">If your DNlite level is <span className="font-bold" style={{ color: COLORS.red }}>High Risk</span>, your risk of renal function deterioration within 5 years is <span className="font-bold text-sm" style={{ color: COLORS.red }}>9.5 times</span> higher than that of a diabetic patient.</p>
-                        <div className="rounded-xl p-4 flex justify-center items-end h-[180px]" style={{ backgroundColor: '#dce3eb' }}><RiskBarChart value={1} label="Low Risk" color={COLORS.teal} /><RiskBarChart value={9.5} label="High Risk" color={COLORS.red} /></div>
-                        <div className="text-center text-[10px] text-slate-400 mt-2 font-medium">Incidence Rate Ratio</div>
+                        <h3 className="text-base font-bold text-slate-800 mb-3 border-l-4 border-slate-800 pl-3">腎功能惡化</h3>
+                        <p className="text-xs text-slate-600 leading-relaxed mb-6 text-justify h-12">若您被歸類為 <span className="font-bold" style={{ color: COLORS.red }}>高度風險</span>，您在 5 年內腎功能惡化的風險是一般糖尿病患者的 <span className="font-bold text-sm" style={{ color: COLORS.red }}>9.5 倍</span>。</p>
+                        <div className="rounded-xl p-4 flex justify-center items-end h-[150px] bg-slate-50"><RiskBarChart value={1} label="低" color={COLORS.teal} /><RiskBarChart value={9.5} label="高" color={COLORS.red} /></div>
+                        <div className="text-center text-[10px] text-slate-400 mt-2 font-medium">發生率比</div>
                       </div>
                       <div className="flex flex-col">
-                        <h3 className="text-base font-bold text-slate-800 mb-3 border-l-4 border-slate-800 pl-3">End-Stage Renal Disease (ESRD)</h3>
-                        <p className="text-xs text-slate-600 leading-relaxed mb-6 text-justify h-12">If you are categorized as <span className="font-bold" style={{ color: COLORS.red }}>High Risk</span>, your risk of developing ESRD within 5 years is <span className="font-bold text-sm" style={{ color: COLORS.red }}>3.5 times</span> higher than that of a diabetic patient.</p>
-                        <div className="rounded-xl p-4 flex justify-center items-end h-[180px]" style={{ backgroundColor: '#dce3eb' }}><RiskBarChart value={1} label="Low Risk" color={COLORS.teal} /><RiskBarChart value={3.5} label="High Risk" color={COLORS.red} /></div>
-                        <div className="text-center text-[10px] text-slate-400 mt-2 font-medium">Incidence Rate Ratio</div>
+                        <h3 className="text-base font-bold text-slate-800 mb-3 border-l-4 border-slate-800 pl-3">末期腎病變 (ESRD)</h3>
+                        <p className="text-xs text-slate-600 leading-relaxed mb-6 text-justify h-12">若您被歸類為 <span className="font-bold" style={{ color: COLORS.red }}>高度風險</span>，您在 5 年內發展為末期腎病變的風險是一般糖尿病患者的 <span className="font-bold text-sm" style={{ color: COLORS.red }}>3.5 倍</span>。</p>
+                        <div className="rounded-xl p-4 flex justify-center items-end h-[150px] bg-slate-50"><RiskBarChart value={1} label="低" color={COLORS.teal} /><RiskBarChart value={3.5} label="高" color={COLORS.red} /></div>
+                        <div className="text-center text-[10px] text-slate-400 mt-2 font-medium">發生率比</div>
                       </div>
                     </div>
-                    <div className="text-[10px] text-slate-500 italic leading-snug bg-slate-50 p-3 rounded border border-slate-100"><b>Note 1:</b> "Renal function deterioration" is clinically defined as a decrease in eGFR by more than 30%.<br /><b>Note 2:</b> "End-stage renal disease" is clinically defined as requiring kidney transplantation, dialysis, or an increase in serum creatinine by more than 50% within 3 months.</div>
+                    <div className="text-[10px] text-slate-500 italic leading-snug bg-slate-50 p-3 rounded border border-slate-100"><b>註 1:</b> 「腎功能惡化」臨床定義為估計腎絲球過濾率 (eGFR) 下降超過 30%。<br /><b>註 2:</b> 「末期腎病變」臨床定義為需要腎臟移植、透析，或血清肌酸酐在 3 個月內增加超過 50%。</div>
                   </div>
                   <div className="mt-6">
-                    <h3 className="text-base font-bold text-slate-800 mb-4 border-l-4 pl-3" style={{ borderColor: COLORS.teal }}>Important Notes & Recommended Follow-Up</h3>
-                    <div className="grid grid-cols-2 gap-6">
+                    <h3 className="text-base font-bold text-slate-800 mb-4 border-l-4 pl-3" style={{ borderColor: COLORS.teal }}>重要注意事項與建議追蹤</h3>
+                    <div className="flex flex-col gap-4">
                       <div className="border rounded-xl overflow-hidden flex flex-col shadow-sm" style={{ borderColor: COLORS.teal }}>
-                        <div className="py-2 px-4 text-white text-sm font-bold flex items-center gap-2" style={{ backgroundColor: COLORS.teal }}><CheckCircle2 className="w-4 h-4" /> Low Risk</div>
-                        <div className="p-5 flex-1 flex flex-col justify-center" style={{ backgroundColor: COLORS.bgTeal }}><p className="text-xs text-slate-700 leading-relaxed text-justify">Your kidney function is within the normal range. Please continue your current blood glucose monitoring, medication management, and complication screening plan. It is recommended to undergo the DNlite kidney function test <b>once a year</b>.</p></div>
+                        <div className="py-2 px-4 text-white text-sm font-bold flex items-center gap-2" style={{ backgroundColor: COLORS.teal }}><CheckCircle2 className="w-4 h-4" /> 低度風險</div>
+                        <div className="p-3 flex-1 flex flex-col justify-center" style={{ backgroundColor: COLORS.bgTeal }}><p className="text-xs text-slate-700 leading-relaxed text-justify">您的腎功能處於正常範圍。請繼續目前的血糖監測、藥物管理和併發症篩檢計畫。建議<span className="font-bold">每年</span>進行一次 DNlite 腎功能檢測，以及時評估腎病風險。</p></div>
                       </div>
                       <div className="border rounded-xl overflow-hidden flex flex-col shadow-sm" style={{ borderColor: COLORS.red }}>
-                        <div className="py-2 px-4 text-white text-sm font-bold flex items-center gap-2" style={{ backgroundColor: COLORS.red }}><AlertTriangle className="w-4 h-4" /> High Risk</div>
-                        <div className="p-5 flex-1 flex flex-col justify-center" style={{ backgroundColor: COLORS.bgRed }}><p className="text-xs text-slate-700 leading-relaxed text-justify">Your kidney function is in a condition that may negatively impact your health. Please contact your physician as soon as possible. It is recommended to undergo the DNlite kidney function test <b>every 3 to 6 months</b> to monitor your kidney disease risk.</p></div>
+                        <div className="py-2 px-4 text-white text-sm font-bold flex items-center gap-2" style={{ backgroundColor: COLORS.red }}><AlertTriangle className="w-4 h-4" /> 高度風險</div>
+                        <div className="p-3 flex-1 flex flex-col justify-center" style={{ backgroundColor: COLORS.bgRed }}><p className="text-xs text-slate-700 leading-relaxed text-justify">您的腎功能狀況可能對健康產生負面影響。請盡快聯繫醫師討論並制定個人化的健康管理計畫。透過積極的預防措施，您可以降低腎臟相關併發症的風險。建議<span className="font-bold">每 3 到 6 個月</span>進行一次 DNlite 腎功能檢測。</p></div>
                       </div>
                     </div>
                   </div>
@@ -492,7 +501,7 @@ export default function App() {
                     <ul className="text-[10px] text-slate-500 list-disc list-inside leading-normal space-y-1"><li>Nat Rev Nephrol. 2021 (17) 740-750.</li><li>Am J Nephrol. 2023 Oct 9. doi: 10.1159/000534514.</li><li>IFU: DNlite-DKD UPTM-FetA ELISA Kit (8103105).</li><li>DNlite-DKD UPTM-FetA ELISA Kit: Technical Notice (TN8103105-04)</li></ul>
                   </div>
                 </div>
-                <div className="h-[60px] px-10 pb-6 bg-white box-border flex flex-col justify-end flex-none"><div className="border-t border-slate-200 pt-2 flex justify-between text-[10px] text-slate-400 font-mono"><span>Generated by DNlite Analysis System V23.1</span><span>Page 2/2</span></div></div>
+                <div className="h-[60px] px-10 pb-6 bg-white box-border flex flex-col justify-end flex-none"><div className="border-t border-slate-200 pt-2 flex justify-between text-[10px] text-slate-400 font-mono"><span>Generated by DNlite Analysis System V23.1</span><span>頁次 2/2</span></div></div>
               </div>
             </div>
           )

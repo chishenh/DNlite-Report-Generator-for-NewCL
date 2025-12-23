@@ -1,6 +1,15 @@
 
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Image, Svg, Path, Circle, Line, G } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image, Svg, Path, Circle, Line, G, Font } from '@react-pdf/renderer';
+
+// Register Chinese Font
+Font.register({
+    family: 'Noto Sans TC',
+    fonts: [
+        { src: 'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-tc@5.0.12/files/noto-sans-tc-chinese-traditional-400-normal.woff' },
+        { src: 'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-tc@5.0.12/files/noto-sans-tc-chinese-traditional-700-normal.woff', fontWeight: 'bold' }
+    ]
+});
 
 // [Config] Colors
 const COLORS = {
@@ -27,7 +36,8 @@ const COLORS = {
 const styles = StyleSheet.create({
     page: {
         paddingBottom: 20,
-        fontFamily: 'Helvetica',
+        paddingBottom: 20,
+        fontFamily: 'Noto Sans TC',
         fontSize: 10,
         color: COLORS.slate800,
     },
@@ -62,18 +72,16 @@ const styles = StyleSheet.create({
     },
     titleTextDNlite: {
         fontSize: 28,
-        fontFamily: 'Helvetica-Bold',
         color: COLORS.teal,
     },
     titleSup: {
         fontSize: 12,
-        fontFamily: 'Helvetica-Bold',
+        fontWeight: 'bold',
         color: COLORS.teal,
         marginTop: 2,
     },
     titleTextReport: {
         fontSize: 28,
-        fontFamily: 'Helvetica-Bold',
         color: COLORS.slate900,
         marginLeft: 8,
     },
@@ -107,7 +115,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 12,
-        fontFamily: 'Helvetica-Bold',
+        fontWeight: 'bold',
         color: COLORS.slate800,
     },
     grid: {
@@ -142,12 +150,12 @@ const styles = StyleSheet.create({
     },
     cellLabelText: {
         fontSize: 10,
-        fontFamily: 'Helvetica-Bold',
+        fontWeight: 'bold',
         color: COLORS.slate500,
     },
     cellValueText: {
         fontSize: 10,
-        fontFamily: 'Helvetica',
+
         color: COLORS.slate900,
     },
     table: {
@@ -186,7 +194,7 @@ const styles = StyleSheet.create({
     },
     thText: {
         fontSize: 10,
-        fontFamily: 'Helvetica-Bold',
+        fontWeight: 'bold',
         color: COLORS.slate500,
     },
     tdText: {
@@ -225,7 +233,8 @@ const styles = StyleSheet.create({
     recText: {
         fontSize: 9,
         color: COLORS.slate700,
-        lineHeight: 1.5,
+        color: COLORS.slate700,
+        lineHeight: 1.6,
         textAlign: 'justify',
     },
     signaturesGrid: {
@@ -245,7 +254,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 30,
+        alignItems: 'center',
+        marginBottom: 10,
     },
     appendixBadge: {
         borderWidth: 1,
@@ -255,21 +265,21 @@ const styles = StyleSheet.create({
         paddingVertical: 4,
         paddingHorizontal: 8,
         borderRadius: 4,
-        fontFamily: 'Helvetica-Bold',
+        fontWeight: 'bold',
     },
     riskVisualRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 20,
+        marginBottom: 10,
     },
     riskCol: {
-        width: '48%',
+        width: '46%',
     },
     chartBox: {
-        backgroundColor: COLORS.slate225,
+        backgroundColor: COLORS.slate50,
         borderRadius: 8,
         padding: 16,
-        height: 140,
+        height: 150,
         marginTop: 10,
         flexDirection: 'row',
         alignItems: 'flex-end',
@@ -289,20 +299,20 @@ const styles = StyleSheet.create({
     },
     barVal: {
         fontSize: 11,
-        fontFamily: 'Helvetica-Bold',
+        fontWeight: 'bold',
         color: COLORS.slate700,
         marginBottom: 4,
     },
     infoCards: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+        flexDirection: 'column',
         marginTop: 10,
     },
     card: {
-        width: '48%',
+        width: '100%',
         borderWidth: 1,
         borderRadius: 8,
         overflow: 'hidden',
+        marginBottom: 10,
     },
     cardTitleBlock: {
         paddingVertical: 8,
@@ -426,15 +436,14 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
                 return (
                     <React.Fragment key={index}>
                         {/* --- PAGE 1 --- */}
-                        <Page size="A4" style={[styles.page, { backgroundColor: noteBg }]}>
+                        <Page size="A4" style={[styles.page, { backgroundColor: 'white' }]}>
                             {/* Header */}
                             <View style={styles.header}>
                                 <View style={styles.headerLeft}>
                                     {logo ? <Image src={logo} style={styles.logoInHeader} /> : null}
                                     <View style={styles.titleBlock}>
-                                        <Text style={styles.titleTextDNlite}>DNlite</Text>
-                                        <Text style={styles.titleSup}>®</Text>
-                                        <Text style={styles.titleTextReport}>Test Report</Text>
+                                        <Text style={styles.titleTextDNlite}>遠腎佳</Text>
+                                        <Text style={styles.titleTextReport}>糖尿病腎病預後檢測</Text>
                                     </View>
                                 </View>
                                 <View style={styles.companyLogoArea}>
@@ -446,61 +455,63 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
                             <View style={styles.content}>
                                 <View style={styles.sectionTitleWrapper}>
                                     <View style={styles.sectionTitleBar} />
-                                    <Text style={styles.sectionTitle}>Personal Information</Text>
+                                    <Text style={styles.sectionTitle}>個人資訊</Text>
                                 </View>
                                 <View style={styles.grid}>
                                     <View style={styles.row}>
-                                        <View style={styles.cellLabelContainer}><Text style={styles.cellLabelText}>Clinic</Text></View>
-                                        <View style={styles.cellValueContainer}><Text style={styles.cellValueText}>{String(person._unit || '')}</Text></View>
-                                        <View style={styles.cellLabelContainer}><Text style={styles.cellLabelText}>Sampling Date</Text></View>
-                                        <View style={[styles.cellValueContainer, { borderRightWidth: 0 }]}><Text style={styles.cellValueText}>{String(person._date || '')}</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '33.33%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>診所/單位</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '33.33%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>採檢日期</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '33.34%', borderRightWidth: 0, backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>報告編號</Text></View>
                                     </View>
                                     <View style={styles.row}>
-                                        <View style={styles.cellLabelContainer}><Text style={styles.cellLabelText}>Report Number</Text></View>
-                                        <View style={styles.cellValueContainer}><Text style={styles.cellValueText}>{String(person._reportNo || '')}</Text></View>
-                                        <View style={styles.cellLabelContainer}><Text style={styles.cellLabelText}>Gender</Text></View>
-                                        <View style={[styles.cellValueContainer, { borderRightWidth: 0 }]}><Text style={styles.cellValueText}>{String(person._gender || '')}</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '33.33%', alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._unit || '')}</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '33.33%', alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._date || '')}</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '33.34%', borderRightWidth: 0, alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._reportNo || '')}</Text></View>
                                     </View>
                                     <View style={styles.row}>
-                                        <View style={styles.cellLabelContainer}><Text style={styles.cellLabelText}>Patient / MRN</Text></View>
-                                        <View style={styles.cellValueContainer}>
-                                            <Text style={[styles.cellValueText, { fontFamily: 'Helvetica-Bold' }]}>
-                                                {String(person._name || '')} <Text style={{ fontFamily: 'Helvetica', color: COLORS.slate400, fontSize: 9, fontWeight: 'normal' }}>/ {String(person._mrn || '')}</Text>
+                                        <View style={[styles.cellLabelContainer, { width: '33.33%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>姓名 / 病歷號</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '33.33%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>性別</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '33.34%', borderRightWidth: 0, backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>年齡</Text></View>
+                                    </View>
+                                    <View style={[styles.row, { borderBottomWidth: 0 }]}>
+                                        <View style={[styles.cellValueContainer, { width: '33.33%', alignItems: 'center' }]}>
+                                            <Text style={[styles.cellValueText, { fontWeight: 'bold' }]}>
+                                                {String(person._name || '')} <Text style={{ color: COLORS.slate400, fontSize: 9, fontWeight: 'normal' }}>/ {String(person._mrn || '')}</Text>
                                             </Text>
                                         </View>
-                                        <View style={styles.cellLabelContainer}><Text style={styles.cellLabelText}>Age</Text></View>
-                                        <View style={[styles.cellValueContainer, { borderRightWidth: 0 }]}><Text style={styles.cellValueText}>{String(person._age || '')}</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '33.33%', alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._gender || '')}</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '33.34%', borderRightWidth: 0, alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._age || '')}</Text></View>
                                     </View>
                                 </View>
 
                                 <View style={styles.sectionTitleWrapper}>
                                     <View style={styles.sectionTitleBar} />
-                                    <Text style={styles.sectionTitle}>DNlite Level</Text>
+                                    <Text style={styles.sectionTitle}>DNlite 檢測結果</Text>
                                 </View>
                                 <View style={styles.table}>
                                     <View style={[styles.tableHeader, { backgroundColor: COLORS.slate300 }]}>
-                                        <View style={[styles.thContainer, { width: '35%' }]}><Text style={styles.thText}>Item</Text></View>
-                                        <View style={[styles.thContainer, { width: '20%', alignItems: 'center' }]}><Text style={styles.thText}>Test Result</Text></View>
-                                        <View style={[styles.thContainer, { width: '15%', alignItems: 'center' }]}><Text style={styles.thText}>Unit</Text></View>
-                                        <View style={[styles.thContainer, { width: '30%', borderRightWidth: 0 }]}><Text style={styles.thText}>Remark</Text></View>
+                                        <View style={[styles.thContainer, { width: '35%' }]}><Text style={styles.thText}>檢測項目</Text></View>
+                                        <View style={[styles.thContainer, { width: '20%', alignItems: 'center' }]}><Text style={styles.thText}>結果</Text></View>
+                                        <View style={[styles.thContainer, { width: '15%', alignItems: 'center' }]}><Text style={styles.thText}>單位</Text></View>
+                                        <View style={[styles.thContainer, { width: '30%', borderRightWidth: 0, justifyContent: 'center', alignItems: 'center' }]}><Text style={styles.thText}>備註</Text></View>
                                     </View>
                                     <View style={styles.tableRow}>
-                                        <View style={[styles.tdContainer, { width: '35%', backgroundColor: COLORS.slate225 }]}><Text style={[styles.tdText, { fontFamily: 'Helvetica-Bold' }]}>uPTM-FetA</Text></View>
-                                        <View style={[styles.tdContainer, { width: '20%', alignItems: 'center' }]}><Text style={[styles.tdText, { fontFamily: 'Helvetica-Bold' }]}>{String(person._disp_uptm || '')}</Text></View>
+                                        <View style={[styles.tdContainer, { width: '35%', backgroundColor: COLORS.slate100 }]}><Text style={[styles.tdText, { fontWeight: 'bold' }]}>uPTM-FetA</Text></View>
+                                        <View style={[styles.tdContainer, { width: '20%', alignItems: 'center' }]}><Text style={[styles.tdText, { fontWeight: 'bold' }]}>{String(person._disp_uptm || '')}</Text></View>
                                         <View style={[styles.tdContainer, { width: '15%', alignItems: 'center' }]}><Text style={styles.tdText}>ng/mL</Text></View>
-                                        <View style={[styles.tdContainer, { width: '30%', borderRightWidth: 0 }]}><Text style={styles.tdText}></Text></View>
+                                        <View style={[styles.tdContainer, { width: '30%', borderRightWidth: 0, justifyContent: 'center', alignItems: 'center' }]}><Text style={styles.tdText}></Text></View>
                                     </View>
                                     <View style={styles.tableRow}>
-                                        <View style={[styles.tdContainer, { width: '35%', backgroundColor: COLORS.slate225 }]}><Text style={[styles.tdText, { fontFamily: 'Helvetica-Bold' }]}>Urine creatinine (UCr)</Text></View>
-                                        <View style={[styles.tdContainer, { width: '20%', alignItems: 'center' }]}><Text style={[styles.tdText, { fontFamily: 'Helvetica-Bold' }]}>{String(person._disp_ucr || '')}</Text></View>
+                                        <View style={[styles.tdContainer, { width: '35%', backgroundColor: COLORS.slate100 }]}><Text style={[styles.tdText, { fontWeight: 'bold' }]}>Urine creatinine (UCr)</Text></View>
+                                        <View style={[styles.tdContainer, { width: '20%', alignItems: 'center' }]}><Text style={[styles.tdText, { fontWeight: 'bold' }]}>{String(person._disp_ucr || '')}</Text></View>
                                         <View style={[styles.tdContainer, { width: '15%', alignItems: 'center' }]}><Text style={styles.tdText}>mg/dL</Text></View>
-                                        <View style={[styles.tdContainer, { width: '30%', borderRightWidth: 0 }]}><Text style={[styles.tdText, { color: COLORS.slate500, fontSize: 8 }]}>Normal Range: 0.60-2.50</Text></View>
+                                        <View style={[styles.tdContainer, { width: '30%', borderRightWidth: 0, justifyContent: 'center', alignItems: 'center' }]}><Text style={[styles.tdText, { color: COLORS.slate500, fontSize: 8 }]}>參考區間: 0.60-2.50</Text></View>
                                     </View>
                                     <View style={[styles.tableRow, { backgroundColor: 'white' }]}>
-                                        <View style={[styles.tdContainer, { width: '35%', backgroundColor: COLORS.slate225 }]}><Text style={[styles.tdText, { fontFamily: 'Helvetica-Bold' }]}>DNlite (uPTM-FetA/UCr)</Text></View>
-                                        <View style={[styles.tdContainer, { width: '20%', alignItems: 'center' }]}><Text style={[styles.tdText, { fontFamily: 'Helvetica-Bold', color: statusColor }]}>{String(person._disp_dnlite || '')}</Text></View>
+                                        <View style={[styles.tdContainer, { width: '35%', backgroundColor: COLORS.slate100 }]}><Text style={[styles.tdText, { fontWeight: 'bold' }]}>DNlite (uPTM-FetA/UCr)</Text></View>
+                                        <View style={[styles.tdContainer, { width: '20%', alignItems: 'center' }]}><Text style={[styles.tdText, { fontWeight: 'bold', color: statusColor }]}>{String(person._disp_dnlite || '')}</Text></View>
                                         <View style={[styles.tdContainer, { width: '15%', alignItems: 'center' }]}><Text style={styles.tdText}>ng/mg</Text></View>
-                                        <View style={[styles.tdContainer, { width: '30%', borderRightWidth: 0 }]}><Text style={[styles.tdText, { fontFamily: 'Helvetica-Bold', color: COLORS.slate500, fontSize: 8 }]}>Cut-off: 7.53</Text></View>
+                                        <View style={[styles.tdContainer, { width: '30%', borderRightWidth: 0, justifyContent: 'center', alignItems: 'center' }]}><Text style={[styles.tdText, { fontWeight: 'bold', color: COLORS.slate500, fontSize: 8 }]}>臨床建議值: 7.53</Text></View>
                                     </View>
                                 </View>
 
@@ -510,15 +521,15 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
                                     </View>
                                     <View style={styles.resultWrapper}>
                                         <View>
-                                            <Text style={{ fontSize: 10, color: COLORS.slate500, marginBottom: 4 }}>Your DNlite level is</Text>
-                                            <Text style={{ fontSize: 30, fontFamily: 'Helvetica-Bold', color: statusColor }}>
+                                            <Text style={{ fontSize: 10, color: COLORS.slate500, marginBottom: 4 }}>您的 DNlite 數值為</Text>
+                                            <Text style={{ fontSize: 30, fontWeight: 'bold', color: statusColor }}>
                                                 {String(person._disp_dnlite || '')} <Text style={{ fontSize: 10, color: COLORS.slate400, fontFamily: 'Helvetica' }}>ng/mg</Text>
                                             </Text>
                                         </View>
                                         <View>
-                                            <Text style={{ fontSize: 10, color: COLORS.slate500, marginBottom: 4 }}>Categorized as:</Text>
+                                            <Text style={{ fontSize: 10, color: COLORS.slate500, marginBottom: 4 }}>風險評估:</Text>
                                             <View style={{ backgroundColor: statusColor, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 4, alignSelf: 'flex-start' }}>
-                                                <Text style={{ color: 'white', fontFamily: 'Helvetica-Bold', fontSize: 12 }}>{isRisk ? "High Risk" : "Low Risk"}</Text>
+                                                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>{isRisk ? "高度風險" : "低度風險"}</Text>
                                             </View>
                                         </View>
                                     </View>
@@ -527,116 +538,116 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
                                 <View style={[styles.recommendationBox, { borderColor: statusColor }]}>
                                     <Text style={styles.recText}>
                                         {isRisk
-                                            ? "Your kidney function is in a condition that may negatively impact your health. Please contact your physician as soon as possible to discuss and develop a personalized health management plan. By actively following preventive measures, you can reduce the risk of kidney-related complications. It is recommended to undergo the DNlite kidney function test every 3 to 6 months."
-                                            : "Your kidney function is within the normal range. Please continue with your current blood glucose monitoring, medication management, and complication screening plan. Undergo the DNlite kidney function test once a year to assess your risk of kidney disease in a timely manner."
+                                            ? "您的腎功能狀況可能對健康產生負面影響。請盡快聯繫醫師討論並制定個人化的健康管理計畫。透過積極的預防措施，您可以降低腎臟相關併發症的風險。建議每 3 到 6 個月進行一次 DNlite 腎功能檢測。"
+                                            : "您的腎功能處於正常範圍。請繼續目前的血糖監測、藥物管理和併發症篩檢計畫。建議每年進行一次 DNlite 腎功能檢測，以及時評估腎病風險。"
                                         }
                                     </Text>
                                 </View>
 
                                 <View style={styles.signaturesGrid}>
                                     <View style={styles.row}>
-                                        <View style={[styles.cellLabelContainer, { width: '25%' }]}><Text style={styles.cellLabelText}>Lab. Director</Text></View>
-                                        <View style={[styles.cellValueContainer, { width: '25%' }]}><Text style={[styles.cellValueText, { fontFamily: 'Helvetica-Oblique' }]}>{String(inspector || '')}</Text></View>
-                                        <View style={[styles.cellLabelContainer, { width: '25%' }]}><Text style={styles.cellLabelText}>Report Date</Text></View>
-                                        <View style={[styles.cellValueContainer, { width: '25%', borderRightWidth: 0 }]}><Text style={styles.cellValueText}>{String(person._date || '')}</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '25%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>實驗室主管</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '25%', alignItems: 'center' }]}><Text style={[styles.cellValueText, {}]}>{String(inspector || '')}</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '25%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>報告日期</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '25%', borderRightWidth: 0, alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._date || '')}</Text></View>
                                     </View>
                                 </View>
                             </View>
 
                             <View style={styles.footer}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%' }}>
-                                    <Text style={{ fontSize: 8, color: COLORS.slate400 }}>Page 1/2</Text>
+                                    <Text style={{ fontSize: 8, color: COLORS.slate400 }}>頁次 1/2</Text>
                                 </View>
                             </View>
                         </Page>
 
                         {/* --- PAGE 2 --- */}
-                        <Page size="A4" style={[styles.page, { backgroundColor: noteBg }]}>
+                        <Page size="A4" style={[styles.page, { backgroundColor: 'white' }]}>
                             <View style={styles.p2Header}>
-                                <Text style={{ fontSize: 22, fontFamily: 'Helvetica-Bold' }}>Definition of Risk</Text>
-                                <Text style={styles.appendixBadge}>APPENDIX</Text>
+                                <Text style={{ fontSize: 22, fontWeight: 'bold' }}>風險定義</Text>
+                                <Text style={styles.appendixBadge}>附錄</Text>
                             </View>
                             <View style={styles.content}>
                                 <View style={styles.riskVisualRow}>
                                     <View style={styles.riskCol}>
                                         <View style={styles.sectionTitleWrapper}>
                                             <View style={[styles.sectionTitleBar, { backgroundColor: COLORS.slate800 }]} />
-                                            <Text style={styles.sectionTitle}>Renal Function Deterioration</Text>
+                                            <Text style={styles.sectionTitle}>腎功能惡化</Text>
                                         </View>
-                                        <Text style={styles.recText}>
-                                            If your DNlite level is <Text style={{ color: COLORS.red, fontFamily: 'Helvetica-Bold' }}>High Risk</Text>, your risk of renal function deterioration within 5 years is <Text style={{ color: COLORS.red, fontFamily: 'Helvetica-Bold' }}>9.5 times</Text> higher than that of a diabetic patient.
+                                        <Text style={[styles.recText, { minHeight: 40, marginBottom: 10 }]}>
+                                            若您被歸類為 <Text style={{ color: COLORS.red, fontWeight: 'bold' }}>高度風險</Text>，您在 5 年內腎功能惡化的風險是一般糖尿病患者的 <Text style={{ color: COLORS.red, fontWeight: 'bold' }}>9.5 倍</Text>。
                                         </Text>
                                         <View style={styles.chartBox}>
                                             <View style={styles.barCol}>
                                                 <Text style={styles.barVal}>1</Text>
-                                                <View style={{ width: 60, height: '10%', backgroundColor: COLORS.teal, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
-                                                <Text style={styles.barLabel}>Low</Text>
+                                                <View style={{ width: 60, height: '9%', backgroundColor: COLORS.teal, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                <Text style={styles.barLabel}>低</Text>
                                             </View>
                                             <View style={styles.barCol}>
                                                 <Text style={[styles.barVal, { color: COLORS.red }]}>9.5</Text>
-                                                <View style={{ width: 60, height: '95%', backgroundColor: COLORS.red, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
-                                                <Text style={styles.barLabel}>High</Text>
+                                                <View style={{ width: 60, height: '85.5%', backgroundColor: COLORS.red, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                <Text style={styles.barLabel}>高</Text>
                                             </View>
                                         </View>
-                                        <Text style={{ fontSize: 8, color: COLORS.slate400, textAlign: 'center', marginTop: 4, fontFamily: 'Helvetica-Oblique' }}>Incidence Rate Ratio</Text>
+                                        <Text style={{ fontSize: 8, color: COLORS.slate400, textAlign: 'center', marginTop: 4, }}>發生率比</Text>
                                     </View>
                                     <View style={styles.riskCol}>
                                         <View style={styles.sectionTitleWrapper}>
                                             <View style={[styles.sectionTitleBar, { backgroundColor: COLORS.slate800 }]} />
-                                            <Text style={styles.sectionTitle}>End-Stage Renal Disease (ESRD)</Text>
+                                            <Text style={styles.sectionTitle}>末期腎病變 (ESRD)</Text>
                                         </View>
-                                        <Text style={styles.recText}>
-                                            If you are categorized as <Text style={{ color: COLORS.red, fontFamily: 'Helvetica-Bold' }}>High Risk</Text>, your risk of developing ESRD within 5 years is <Text style={{ color: COLORS.red, fontFamily: 'Helvetica-Bold' }}>3.5 times</Text> higher than that of a diabetic patient.
+                                        <Text style={[styles.recText, { minHeight: 40, marginBottom: 10 }]}>
+                                            若您被歸類為 <Text style={{ color: COLORS.red, fontWeight: 'bold' }}>高度風險</Text>，您在 5 年內發展為末期腎病變的風險是一般糖尿病患者的 <Text style={{ color: COLORS.red, fontWeight: 'bold' }}>3.5 倍</Text>。
                                         </Text>
                                         <View style={styles.chartBox}>
                                             <View style={styles.barCol}>
                                                 <Text style={styles.barVal}>1</Text>
-                                                <View style={{ width: 60, height: '28%', backgroundColor: COLORS.teal, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
-                                                <Text style={styles.barLabel}>Low</Text>
+                                                <View style={{ width: 60, height: '9%', backgroundColor: COLORS.teal, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                <Text style={styles.barLabel}>低</Text>
                                             </View>
                                             <View style={styles.barCol}>
                                                 <Text style={[styles.barVal, { color: COLORS.red }]}>3.5</Text>
-                                                <View style={{ width: 60, height: '95%', backgroundColor: COLORS.red, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
-                                                <Text style={styles.barLabel}>High</Text>
+                                                <View style={{ width: 60, height: '31.5%', backgroundColor: COLORS.red, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                <Text style={styles.barLabel}>高</Text>
                                             </View>
                                         </View>
-                                        <Text style={{ fontSize: 8, color: COLORS.slate400, textAlign: 'center', marginTop: 4, fontFamily: 'Helvetica-Oblique' }}>Incidence Rate Ratio</Text>
+                                        <Text style={{ fontSize: 8, color: COLORS.slate400, textAlign: 'center', marginTop: 4, }}>發生率比</Text>
                                     </View>
                                 </View>
                                 <View style={{ backgroundColor: COLORS.slate50, padding: 12, borderRadius: 6, borderWidth: 1, borderColor: COLORS.slate100 }}>
                                     <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.5 }}>
-                                        <Text style={{ fontFamily: 'Helvetica-Bold' }}>Note 1:</Text> "Renal function deterioration" is clinically defined as a decrease in estimated Glomerular Filtration Rate (eGFR) by more than 30%.{"\n"}
-                                        <Text style={{ fontFamily: 'Helvetica-Bold' }}>Note 2:</Text> "End-stage renal disease" is clinically defined as requiring kidney transplantation, dialysis, or an increase in serum creatinine by more than 50% within 3 months.
+                                        <Text style={{ fontWeight: 'bold' }}>註 1:</Text> 「腎功能惡化」臨床定義為估計腎絲球過濾率 (eGFR) 下降超過 30%。{"\n"}
+                                        <Text style={{ fontWeight: 'bold' }}>註 2:</Text> 「末期腎病變」臨床定義為需要腎臟移植、透析，或血清肌酸酐在 3 個月內增加超過 50%。
                                     </Text>
                                 </View>
-                                <View style={[styles.sectionTitleWrapper, { marginTop: 30 }]}>
+                                <View style={[styles.sectionTitleWrapper, { marginTop: 20 }]}>
                                     <View style={styles.sectionTitleBar} />
-                                    <Text style={styles.sectionTitle}>Important Notes & Recommended Follow-Up</Text>
+                                    <Text style={styles.sectionTitle}>重要注意事項與建議追蹤</Text>
                                 </View>
                                 <View style={styles.infoCards}>
                                     <View style={[styles.card, { borderColor: COLORS.teal }]}>
                                         <View style={[styles.cardTitleBlock, { backgroundColor: COLORS.teal }]}>
-                                            <Text style={{ color: 'white', fontSize: 10, fontFamily: 'Helvetica-Bold' }}>Low Risk</Text>
+                                            <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>低度風險</Text>
                                         </View>
-                                        <View style={styles.cardBody}>
+                                        <View style={[styles.cardBody, { backgroundColor: COLORS.bgTeal, padding: 12 }]}>
                                             <Text style={styles.recText}>
-                                                Your kidney function is within the normal range. Please continue your current blood glucose monitoring, medication management, and complication screening plan. It is recommended to undergo the DNlite kidney function test <Text style={{ fontFamily: 'Helvetica-Bold' }}>once a year</Text>.
+                                                您的腎功能處於正常範圍。請繼續目前的血糖監測、藥物管理和併發症篩檢計畫。建議<Text style={{ fontWeight: 'bold' }}>每年</Text>進行一次 DNlite 腎功能檢測，以及時評估腎病風險。
                                             </Text>
                                         </View>
                                     </View>
                                     <View style={[styles.card, { borderColor: COLORS.red }]}>
                                         <View style={[styles.cardTitleBlock, { backgroundColor: COLORS.red }]}>
-                                            <Text style={{ color: 'white', fontSize: 10, fontFamily: 'Helvetica-Bold' }}>High Risk</Text>
+                                            <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>高度風險</Text>
                                         </View>
-                                        <View style={styles.cardBody}>
+                                        <View style={[styles.cardBody, { backgroundColor: COLORS.bgRed, padding: 12 }]}>
                                             <Text style={styles.recText}>
-                                                Your kidney function is in a condition that may negatively impact your health. Please contact your physician as soon as possible. It is recommended to undergo the DNlite kidney function test <Text style={{ fontFamily: 'Helvetica-Bold' }}>every 3 to 6 months</Text> to monitor your kidney disease risk.
+                                                您的腎功能狀況可能對健康產生負面影響。請盡快聯繫醫師討論並制定個人化的健康管理計畫。透過積極的預防措施，您可以降低腎臟相關併發症的風險。建議<Text style={{ fontWeight: 'bold' }}>每 3 到 6 個月</Text>進行一次 DNlite 腎功能檢測。
                                             </Text>
                                         </View>
                                     </View>
                                 </View>
-                                <View style={{ marginTop: 30 }}>
-                                    <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: COLORS.slate400, marginBottom: 4, letterSpacing: 1 }}>REFERENCES</Text>
+                                <View style={{ marginTop: 20 }}>
+                                    <Text style={{ fontSize: 8, fontWeight: 'bold', color: COLORS.slate400, marginBottom: 4, letterSpacing: 1 }}>REFERENCES</Text>
                                     <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.4 }}>• Nat Rev Nephrol. 2021 (17) 740-750.</Text>
                                     <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.4 }}>• Am J Nephrol. 2023 Oct 9. doi: 10.1159/000534514.</Text>
                                     <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.4 }}>• IFU: DNlite-DKD UPTM-FetA ELISA Kit (8103105).</Text>
@@ -645,7 +656,7 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
                             </View>
                             <View style={styles.footer}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%' }}>
-                                    <Text style={{ fontSize: 8, color: COLORS.slate400 }}>Page 2/2</Text>
+                                    <Text style={{ fontSize: 8, color: COLORS.slate400 }}>頁次 2/2</Text>
                                 </View>
                             </View>
                         </Page>
