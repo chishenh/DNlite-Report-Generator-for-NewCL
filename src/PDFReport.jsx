@@ -36,13 +36,13 @@ const COLORS = {
 const styles = StyleSheet.create({
     page: {
         paddingBottom: 20,
-        paddingBottom: 20,
+
         fontFamily: 'Noto Sans TC',
         fontSize: 10,
         color: COLORS.slate800,
     },
     header: {
-        height: 110,
+        height: 150,
         paddingHorizontal: 48,
         paddingTop: 20,
         marginBottom: 10,
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
         width: 150,
         justifyContent: 'flex-end',
         alignItems: 'flex-end',
-        marginBottom: -2,
+        marginBottom: 10,
     },
     companyLogoImg: {
         height: '100%',
@@ -160,7 +160,10 @@ const styles = StyleSheet.create({
     },
     table: {
         width: '100%',
-        borderWidth: 1,
+        borderTopWidth: 1,
+        borderLeftWidth: 1,
+        borderRightWidth: 1,
+        borderBottomWidth: 0,
         borderColor: COLORS.slate300,
         marginBottom: 10,
         backgroundColor: 'white',
@@ -233,7 +236,7 @@ const styles = StyleSheet.create({
     recText: {
         fontSize: 9,
         color: COLORS.slate700,
-        color: COLORS.slate700,
+
         lineHeight: 1.6,
         textAlign: 'justify',
     },
@@ -254,7 +257,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        alignItems: 'center',
+
         marginBottom: 10,
     },
     appendixBadge: {
@@ -431,7 +434,7 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
                 const dnliteVal = parseFloat(person._val_dnlite);
                 const isRisk = dnliteVal >= 7.53;
                 const statusColor = isRisk ? COLORS.red : COLORS.teal;
-                const noteBg = isRisk ? COLORS.bgRed : COLORS.bgTeal;
+
 
                 return (
                     <React.Fragment key={index}>
@@ -440,13 +443,15 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
                             {/* Header */}
                             <View style={styles.header}>
                                 <View style={styles.headerLeft}>
-                                    {logo ? <Image src={logo} style={styles.logoInHeader} /> : null}
-                                    <View style={styles.titleBlock}>
-                                        <Text style={styles.titleTextDNlite}>遠腎佳</Text>
-                                        <Text style={styles.titleTextReport}>糖尿病腎病預後檢測</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 4, marginTop: 10 }}>
+                                        <View style={{ width: 50, height: 50, overflow: 'hidden', marginRight: 5, borderRadius: 4 }}>
+                                            {logo ? <Image src={logo} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : null}
+                                        </View>
+                                        <Text style={{ fontSize: 20, color: COLORS.teal, fontWeight: 'bold', marginBottom: 4 }}>DNlite<Text style={{ fontSize: 10, baseline: 'super', color: COLORS.teal }}>®</Text> 遠腎佳</Text>
                                     </View>
+                                    <Text style={{ fontSize: 26, color: COLORS.slate900, marginTop: 4, marginBottom: 10 }}>腎功能預後檢測報告</Text>
                                 </View>
-                                <View style={styles.companyLogoArea}>
+                                <View style={[styles.companyLogoArea, { overflow: 'hidden' }]}>
                                     {companyLogo ? <Image src={companyLogo} style={styles.companyLogoImg} /> : null}
                                 </View>
                             </View>
@@ -458,29 +463,33 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
                                     <Text style={styles.sectionTitle}>個人資訊</Text>
                                 </View>
                                 <View style={styles.grid}>
+                                    {/* Row 1 Headers (3 Cols) */}
                                     <View style={styles.row}>
-                                        <View style={[styles.cellLabelContainer, { width: '33.33%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>診所/單位</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '33.33%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>送檢單位</Text></View>
                                         <View style={[styles.cellLabelContainer, { width: '33.33%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>採檢日期</Text></View>
                                         <View style={[styles.cellLabelContainer, { width: '33.34%', borderRightWidth: 0, backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>報告編號</Text></View>
                                     </View>
+                                    {/* Row 1 Values (3 Cols) */}
                                     <View style={styles.row}>
                                         <View style={[styles.cellValueContainer, { width: '33.33%', alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._unit || '')}</Text></View>
                                         <View style={[styles.cellValueContainer, { width: '33.33%', alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._date || '')}</Text></View>
                                         <View style={[styles.cellValueContainer, { width: '33.34%', borderRightWidth: 0, alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._reportNo || '')}</Text></View>
                                     </View>
+                                    {/* Row 2 Headers (5 Cols) */}
                                     <View style={styles.row}>
-                                        <View style={[styles.cellLabelContainer, { width: '33.33%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>姓名 / 病歷號</Text></View>
-                                        <View style={[styles.cellLabelContainer, { width: '33.33%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>性別</Text></View>
-                                        <View style={[styles.cellLabelContainer, { width: '33.34%', borderRightWidth: 0, backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>年齡</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '20%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>姓名</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '20%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>病歷號碼</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '20%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>性別</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '20%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>出生日期</Text></View>
+                                        <View style={[styles.cellLabelContainer, { width: '20%', borderRightWidth: 0, backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>身分證字號</Text></View>
                                     </View>
+                                    {/* Row 2 Values (5 Cols) */}
                                     <View style={[styles.row, { borderBottomWidth: 0 }]}>
-                                        <View style={[styles.cellValueContainer, { width: '33.33%', alignItems: 'center' }]}>
-                                            <Text style={[styles.cellValueText, { fontWeight: 'bold' }]}>
-                                                {String(person._name || '')} <Text style={{ color: COLORS.slate400, fontSize: 9, fontWeight: 'normal' }}>/ {String(person._mrn || '')}</Text>
-                                            </Text>
-                                        </View>
-                                        <View style={[styles.cellValueContainer, { width: '33.33%', alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._gender || '')}</Text></View>
-                                        <View style={[styles.cellValueContainer, { width: '33.34%', borderRightWidth: 0, alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._age || '')}</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '20%', alignItems: 'center' }]}><Text style={[styles.cellValueText, { fontWeight: 'bold' }]}>{String(person._name || '')}</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '20%', alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._mrn || '')}</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '20%', alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._gender || '')}</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '20%', alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._dob || '')}</Text></View>
+                                        <View style={[styles.cellValueContainer, { width: '20%', borderRightWidth: 0, alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._id || '')}</Text></View>
                                     </View>
                                 </View>
 
@@ -537,19 +546,59 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
 
                                 <View style={[styles.recommendationBox, { borderColor: statusColor }]}>
                                     <Text style={styles.recText}>
-                                        {isRisk
-                                            ? "您的腎功能狀況可能對健康產生負面影響。請盡快聯繫醫師討論並制定個人化的健康管理計畫。透過積極的預防措施，您可以降低腎臟相關併發症的風險。建議每 3 到 6 個月進行一次 DNlite 腎功能檢測。"
-                                            : "您的腎功能處於正常範圍。請繼續目前的血糖監測、藥物管理和併發症篩檢計畫。建議每年進行一次 DNlite 腎功能檢測，以及時評估腎病風險。"
-                                        }
+                                        {isRisk ? (
+                                            <React.Fragment>
+                                                <Text>若您為<Text style={{ color: COLORS.red }}>二型糖尿病患</Text>, 5 年腎功能惡化的風險是其他人的 9.5 倍, 末期腎病變風險為 3.5 倍。</Text>
+                                                <Text>{"\n"}請與您的醫師討論及擬定健康管理策略, 並且每三個月追蹤檢驗 DNlite。</Text>
+                                                <Text>{"\n\n"}若您<Text style={{ color: COLORS.red }}>非糖尿病患</Text>, 5 年腎功能惡化的風險是其他人的 4 倍, 末期腎病變風險為 1.6 倍。</Text>
+                                                <Text>{"\n"}請考慮於三個月內再檢測一次 DNlite, 如仍為高風險, 建議您尋求醫師協助, 綜合評估健康狀況。</Text>
+                                            </React.Fragment>
+                                        ) : (
+                                            "您的腎功能處於正常範圍。請繼續目前的血糖監測、藥物管理和併發症篩檢計畫。建議每年進行一次 DNlite 腎功能檢測，以及時評估腎病風險。"
+                                        )}
                                     </Text>
                                 </View>
 
                                 <View style={styles.signaturesGrid}>
-                                    <View style={styles.row}>
-                                        <View style={[styles.cellLabelContainer, { width: '25%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>實驗室主管</Text></View>
-                                        <View style={[styles.cellValueContainer, { width: '25%', alignItems: 'center' }]}><Text style={[styles.cellValueText, {}]}>{String(inspector || '')}</Text></View>
-                                        <View style={[styles.cellLabelContainer, { width: '25%', backgroundColor: COLORS.slate100, alignItems: 'center' }]}><Text style={styles.cellLabelText}>報告日期</Text></View>
-                                        <View style={[styles.cellValueContainer, { width: '25%', borderRightWidth: 0, alignItems: 'center' }]}><Text style={styles.cellValueText}>{String(person._date || '')}</Text></View>
+                                    <View style={[styles.row, { height: 65, borderBottomWidth: 0 }]}>
+                                        {/* Med Tech */}
+                                        <View style={{ width: 25, backgroundColor: COLORS.slate100, borderRightWidth: 1, borderColor: COLORS.slate300, justifyContent: 'center', alignItems: 'center', paddingVertical: 2 }}>
+                                            <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.1 }}>{'醫\n事\n檢\n驗\n師'}</Text>
+                                        </View>
+                                        <View style={{ width: 90, borderRightWidth: 1, borderColor: COLORS.slate300, justifyContent: 'center', alignItems: 'center', padding: 2 }}>
+                                            {person._medTechStamp ? (
+                                                <Image src={person._medTechStamp} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                            ) : (
+                                                <Text style={{ fontSize: 10 }}>{person._medTechName || ''}</Text>
+                                            )}
+                                        </View>
+
+                                        {/* Lab Director / Signatory */}
+                                        <View style={{ width: 25, backgroundColor: COLORS.slate100, borderRightWidth: 1, borderColor: COLORS.slate300, justifyContent: 'center', alignItems: 'center', paddingVertical: 2 }}>
+                                            <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.1 }}>{'報\n告\n簽\n署\n人'}</Text>
+                                        </View>
+                                        <View style={{ width: 90, borderRightWidth: 1, borderColor: COLORS.slate300, justifyContent: 'center', alignItems: 'center', padding: 2 }}>
+                                            {person._signatoryStamp ? (
+                                                <Image src={person._signatoryStamp} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                            ) : (
+                                                <Text style={{ fontSize: 10 }}>{inspector || person._signatoryName}</Text>
+                                            )}
+                                        </View>
+
+                                        {/* Date */}
+                                        <View style={{ width: 25, backgroundColor: COLORS.slate100, borderRightWidth: 1, borderColor: COLORS.slate300, justifyContent: 'center', alignItems: 'center', paddingVertical: 2 }}>
+                                            <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.1 }}>{'報\n告\n日\n期'}</Text>
+                                        </View>
+                                        <View style={{ width: 90, borderRightWidth: 1, borderColor: COLORS.slate300, justifyContent: 'center', alignItems: 'center' }}>
+                                            <Text style={{ fontSize: 10 }}>{person._reportDate}</Text>
+                                        </View>
+
+                                        {/* Footer Info */}
+                                        <View style={{ flex: 1, justifyContent: 'center', paddingLeft: 8 }}>
+                                            <Text style={{ fontSize: 7, color: COLORS.slate500, lineHeight: 1.4 }}>欣奕醫事檢驗所 第二實驗室</Text>
+                                            <Text style={{ fontSize: 7, color: COLORS.slate500, lineHeight: 1.4 }}>新北市永和區中山路一段 168 號 11 樓</Text>
+                                            <Text style={{ fontSize: 7, color: COLORS.slate500, lineHeight: 1.4 }}>TEL 02-29209181</Text>
+                                        </View>
                                     </View>
                                 </View>
                             </View>
@@ -564,94 +613,203 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
                         {/* --- PAGE 2 --- */}
                         <Page size="A4" style={[styles.page, { backgroundColor: 'white' }]}>
                             <View style={styles.p2Header}>
-                                <Text style={{ fontSize: 22, fontWeight: 'bold' }}>風險定義</Text>
-                                <Text style={styles.appendixBadge}>附錄</Text>
+                                <View style={{ backgroundColor: COLORS.teal, paddingVertical: 6, paddingHorizontal: 16, borderRadius: 4 }}>
+                                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'white' }}>風險定義參考</Text>
+                                </View>
                             </View>
                             <View style={styles.content}>
                                 <View style={styles.riskVisualRow}>
+                                    {/* Left Col: Renal Worsening */}
                                     <View style={styles.riskCol}>
                                         <View style={styles.sectionTitleWrapper}>
-                                            <View style={[styles.sectionTitleBar, { backgroundColor: COLORS.slate800 }]} />
-                                            <Text style={styles.sectionTitle}>腎功能惡化</Text>
+                                            <View style={styles.sectionTitleBar} />
+                                            <Text style={styles.sectionTitle}>腎功能惡化風險</Text>
                                         </View>
-                                        <Text style={[styles.recText, { minHeight: 40, marginBottom: 10 }]}>
-                                            若您被歸類為 <Text style={{ color: COLORS.red, fontWeight: 'bold' }}>高度風險</Text>，您在 5 年內腎功能惡化的風險是一般糖尿病患者的 <Text style={{ color: COLORS.red, fontWeight: 'bold' }}>9.5 倍</Text>。
-                                        </Text>
-                                        <View style={styles.chartBox}>
-                                            <View style={styles.barCol}>
-                                                <Text style={styles.barVal}>1</Text>
-                                                <View style={{ width: 60, height: '9%', backgroundColor: COLORS.teal, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
-                                                <Text style={styles.barLabel}>低</Text>
+                                        <View style={{ marginBottom: 8 }}>
+                                            <Text style={{ fontSize: 9, color: COLORS.slate700, fontWeight: 'bold', marginBottom: 4 }}>若 DNlite 遠腎佳檢測結果為「高度風險」：</Text>
+                                            <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6 }}>
+                                                <View style={{ width: 4, height: 4, backgroundColor: COLORS.teal, marginRight: 6, marginTop: 5 }} />
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={{ fontSize: 9, color: COLORS.red, marginBottom: 1 }}>二型糖尿病患</Text>
+                                                    <Text style={{ fontSize: 9, color: COLORS.slate700, lineHeight: 1.4 }}>
+                                                        5年內腎功能惡化的風險為一般二型糖尿病患的 <Text style={{ color: COLORS.slate800, fontWeight: 'bold' }}>9.5 倍</Text>
+                                                    </Text>
+                                                </View>
                                             </View>
-                                            <View style={styles.barCol}>
-                                                <Text style={[styles.barVal, { color: COLORS.red }]}>9.5</Text>
-                                                <View style={{ width: 60, height: '85.5%', backgroundColor: COLORS.red, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
-                                                <Text style={styles.barLabel}>高</Text>
+                                            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                                <View style={{ width: 4, height: 4, backgroundColor: COLORS.teal, marginRight: 6, marginTop: 5 }} />
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={{ fontSize: 9, color: COLORS.red, marginBottom: 1 }}>非糖尿病患</Text>
+                                                    <Text style={{ fontSize: 9, color: COLORS.slate700, lineHeight: 1.4 }}>
+                                                        5年內腎功能惡化的風險為一般非糖尿病患的 <Text style={{ color: COLORS.slate800, fontWeight: 'bold' }}>4.0 倍</Text>
+                                                    </Text>
+                                                </View>
                                             </View>
                                         </View>
-                                        <Text style={{ fontSize: 8, color: COLORS.slate400, textAlign: 'center', marginTop: 4, }}>發生率比</Text>
+
+                                        {/* Charts Row */}
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                            {/* Type 2 Chart */}
+                                            <View style={{ width: '48%', backgroundColor: COLORS.slate50, borderRadius: 4, padding: 6, alignItems: 'center' }}>
+                                                <Text style={{ fontSize: 8, fontWeight: 'bold', color: COLORS.slate500, marginBottom: 20 }}>二型糖尿病</Text>
+                                                <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 85, width: '100%', justifyContent: 'space-around' }}>
+                                                    <View style={{ alignItems: 'center' }}>
+                                                        <Text style={{ fontSize: 8, color: COLORS.slate600, fontWeight: 'bold' }}>1</Text>
+                                                        <View style={{ width: 40, height: 8, backgroundColor: COLORS.teal, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                        <Text style={{ fontSize: 6, color: COLORS.slate400, marginTop: 2 }}>低度風險</Text>
+                                                    </View>
+                                                    <View style={{ alignItems: 'center' }}>
+                                                        <Text style={{ fontSize: 8, color: COLORS.red, fontWeight: 'bold' }}>9.5</Text>
+                                                        <View style={{ width: 40, height: 70, backgroundColor: COLORS.red, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                        <Text style={{ fontSize: 6, color: COLORS.slate600, marginTop: 2, fontWeight: 'bold' }}>高度風險</Text>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                            {/* Non-DM Chart */}
+                                            <View style={{ width: '48%', backgroundColor: COLORS.slate50, borderRadius: 4, padding: 6, alignItems: 'center' }}>
+                                                <Text style={{ fontSize: 8, fontWeight: 'bold', color: COLORS.slate500, marginBottom: 20 }}>非糖尿病</Text>
+                                                <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 85, width: '100%', justifyContent: 'space-around' }}>
+                                                    <View style={{ alignItems: 'center' }}>
+                                                        <Text style={{ fontSize: 8, color: COLORS.slate600, fontWeight: 'bold' }}>1</Text>
+                                                        <View style={{ width: 40, height: 8, backgroundColor: COLORS.teal, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                        <Text style={{ fontSize: 6, color: COLORS.slate400, marginTop: 2 }}>低度風險</Text>
+                                                    </View>
+                                                    <View style={{ alignItems: 'center' }}>
+                                                        <Text style={{ fontSize: 8, color: COLORS.red, fontWeight: 'bold' }}>4.0</Text>
+                                                        <View style={{ width: 40, height: 30, backgroundColor: COLORS.red, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                        <Text style={{ fontSize: 6, color: COLORS.slate600, marginTop: 2, fontWeight: 'bold' }}>高度風險</Text>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </View>
                                     </View>
+
+                                    {/* Right Col: ESRD */}
                                     <View style={styles.riskCol}>
                                         <View style={styles.sectionTitleWrapper}>
-                                            <View style={[styles.sectionTitleBar, { backgroundColor: COLORS.slate800 }]} />
-                                            <Text style={styles.sectionTitle}>末期腎病變 (ESRD)</Text>
+                                            <View style={styles.sectionTitleBar} />
+                                            <Text style={styles.sectionTitle}>末期腎病變風險</Text>
                                         </View>
-                                        <Text style={[styles.recText, { minHeight: 40, marginBottom: 10 }]}>
-                                            若您被歸類為 <Text style={{ color: COLORS.red, fontWeight: 'bold' }}>高度風險</Text>，您在 5 年內發展為末期腎病變的風險是一般糖尿病患者的 <Text style={{ color: COLORS.red, fontWeight: 'bold' }}>3.5 倍</Text>。
-                                        </Text>
-                                        <View style={styles.chartBox}>
-                                            <View style={styles.barCol}>
-                                                <Text style={styles.barVal}>1</Text>
-                                                <View style={{ width: 60, height: '9%', backgroundColor: COLORS.teal, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
-                                                <Text style={styles.barLabel}>低</Text>
+                                        <View style={{ marginBottom: 8 }}>
+                                            <Text style={{ fontSize: 9, color: COLORS.slate700, fontWeight: 'bold', marginBottom: 4 }}>若 DNlite 遠腎佳檢測結果為「高度風險」：</Text>
+                                            <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6 }}>
+                                                <View style={{ width: 4, height: 4, backgroundColor: COLORS.teal, marginRight: 6, marginTop: 5 }} />
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={{ fontSize: 9, color: COLORS.red, marginBottom: 1 }}>二型糖尿病患</Text>
+                                                    <Text style={{ fontSize: 9, color: COLORS.slate700, lineHeight: 1.4 }}>
+                                                        5年內末期腎病變的風險為一般二型糖尿病患的 <Text style={{ color: COLORS.slate800, fontWeight: 'bold' }}>3.5 倍</Text>
+                                                    </Text>
+                                                </View>
                                             </View>
-                                            <View style={styles.barCol}>
-                                                <Text style={[styles.barVal, { color: COLORS.red }]}>3.5</Text>
-                                                <View style={{ width: 60, height: '31.5%', backgroundColor: COLORS.red, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
-                                                <Text style={styles.barLabel}>高</Text>
+                                            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                                <View style={{ width: 4, height: 4, backgroundColor: COLORS.teal, marginRight: 6, marginTop: 5 }} />
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={{ fontSize: 9, color: COLORS.red, marginBottom: 1 }}>非糖尿病患</Text>
+                                                    <Text style={{ fontSize: 9, color: COLORS.slate700, lineHeight: 1.4 }}>
+                                                        5年內末期腎病變的風險為一般非糖尿病患的 <Text style={{ color: COLORS.slate800, fontWeight: 'bold' }}>1.6 倍</Text>
+                                                    </Text>
+                                                </View>
                                             </View>
                                         </View>
-                                        <Text style={{ fontSize: 8, color: COLORS.slate400, textAlign: 'center', marginTop: 4, }}>發生率比</Text>
+
+                                        {/* Charts Row */}
+                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                            {/* Type 2 Chart */}
+                                            <View style={{ width: '48%', backgroundColor: COLORS.slate50, borderRadius: 4, padding: 6, alignItems: 'center' }}>
+                                                <Text style={{ fontSize: 8, fontWeight: 'bold', color: COLORS.slate500, marginBottom: 20 }}>二型糖尿病</Text>
+                                                <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 85, width: '100%', justifyContent: 'space-around' }}>
+                                                    <View style={{ alignItems: 'center' }}>
+                                                        <Text style={{ fontSize: 8, color: COLORS.slate600, fontWeight: 'bold' }}>1</Text>
+                                                        <View style={{ width: 40, height: 8, backgroundColor: COLORS.teal, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                        <Text style={{ fontSize: 6, color: COLORS.slate400, marginTop: 2 }}>低度風險</Text>
+                                                    </View>
+                                                    <View style={{ alignItems: 'center' }}>
+                                                        <Text style={{ fontSize: 8, color: COLORS.red, fontWeight: 'bold' }}>3.5</Text>
+                                                        <View style={{ width: 40, height: 26, backgroundColor: COLORS.red, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                        <Text style={{ fontSize: 6, color: COLORS.slate600, marginTop: 2, fontWeight: 'bold' }}>高度風險</Text>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                            {/* Non-DM Chart */}
+                                            <View style={{ width: '48%', backgroundColor: COLORS.slate50, borderRadius: 4, padding: 6, alignItems: 'center' }}>
+                                                <Text style={{ fontSize: 8, fontWeight: 'bold', color: COLORS.slate500, marginBottom: 20 }}>非糖尿病</Text>
+                                                <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 85, width: '100%', justifyContent: 'space-around' }}>
+                                                    <View style={{ alignItems: 'center' }}>
+                                                        <Text style={{ fontSize: 8, color: COLORS.slate600, fontWeight: 'bold' }}>1</Text>
+                                                        <View style={{ width: 40, height: 8, backgroundColor: COLORS.teal, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                        <Text style={{ fontSize: 6, color: COLORS.slate400, marginTop: 2 }}>低度風險</Text>
+                                                    </View>
+                                                    <View style={{ alignItems: 'center' }}>
+                                                        <Text style={{ fontSize: 8, color: COLORS.red, fontWeight: 'bold' }}>1.6</Text>
+                                                        <View style={{ width: 40, height: 12, backgroundColor: COLORS.red, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                                                        <Text style={{ fontSize: 6, color: COLORS.slate600, marginTop: 2, fontWeight: 'bold' }}>高度風險</Text>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </View>
                                     </View>
                                 </View>
-                                <View style={{ backgroundColor: COLORS.slate50, padding: 12, borderRadius: 6, borderWidth: 1, borderColor: COLORS.slate100 }}>
-                                    <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.5 }}>
-                                        <Text style={{ fontWeight: 'bold' }}>註 1:</Text> 「腎功能惡化」臨床定義為估計腎絲球過濾率 (eGFR) 下降超過 30%。{"\n"}
-                                        <Text style={{ fontWeight: 'bold' }}>註 2:</Text> 「末期腎病變」臨床定義為需要腎臟移植、透析，或血清肌酸酐在 3 個月內增加超過 50%。
+
+                                {/* Notes */}
+                                <View style={{ borderTopWidth: 1, borderColor: COLORS.slate225, paddingTop: 8, marginBottom: 12 }}>
+                                    <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.4 }}>
+                                        <Text style={{ fontWeight: 'bold' }}>備註 1:</Text> 「腎功能惡化」臨床上以<Text style={{ textDecoration: 'underline' }}>腎絲球過濾率下降比例超過30%</Text>表達{"\n"}
+                                        <Text style={{ fontWeight: 'bold' }}>備註 2:</Text> 「末期腎病變」臨床上以<Text style={{ textDecoration: 'underline' }}>需腎移植、透析或3個月內血清肌酸酐增加50%以上</Text>表達{"\n"}
+                                        <Text style={{ fontWeight: 'bold' }}>備註 3:</Text> 台灣二型糖尿病患的慢性腎病變盛行率為 15%~18%，推估5年慢性腎病變發生率約為 5%~9%{"\n"}
+                                        <Text style={{ fontWeight: 'bold' }}>備註 4:</Text> 台灣二型糖尿病患的末期腎病變盛行率為 5%~7%，推估5年末期腎病變發生率約為 1.25%~2.33%{"\n"}
+                                        <Text style={{ fontWeight: 'bold' }}>備註 5:</Text> 台灣一般成年人的慢性腎病變盛行率為 10%~12%，推估5年慢性腎病變發生率約為 3.3%~6%{"\n"}
+                                        <Text style={{ fontWeight: 'bold' }}>備註 6:</Text> 台灣一般成年人的末期腎病變盛行率為 0.35%~0.5%，推估5年末期腎病變發生率約為 0.09%~0.17%
                                     </Text>
                                 </View>
-                                <View style={[styles.sectionTitleWrapper, { marginTop: 20 }]}>
-                                    <View style={styles.sectionTitleBar} />
-                                    <Text style={styles.sectionTitle}>重要注意事項與建議追蹤</Text>
-                                </View>
-                                <View style={styles.infoCards}>
-                                    <View style={[styles.card, { borderColor: COLORS.teal }]}>
-                                        <View style={[styles.cardTitleBlock, { backgroundColor: COLORS.teal }]}>
-                                            <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>低度風險</Text>
+
+                                {/* Precautions */}
+                                <View style={{ marginHorizontal: -48, paddingHorizontal: 48, paddingTop: 16, paddingBottom: 30 }}>
+                                    {/* Section Title */}
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                                        <View style={{ width: 4, height: 14, backgroundColor: COLORS.teal, marginRight: 6 }} />
+                                        <Text style={{ color: COLORS.slate800, fontWeight: 'bold', fontSize: 11 }}>注意事項及建議追蹤方式</Text>
+                                    </View>
+
+                                    {/* Cards Stacked */}
+                                    <View style={{ marginBottom: 15 }}>
+                                        {/* Low Risk Card */}
+                                        <View style={{ width: '100%', borderWidth: 1, borderColor: COLORS.teal, borderRadius: 6, marginBottom: 8 }}>
+                                            <View style={{ backgroundColor: COLORS.teal, paddingVertical: 6, paddingHorizontal: 8, borderTopLeftRadius: 5, borderTopRightRadius: 5 }}>
+                                                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 10 }}>低度風險</Text>
+                                            </View>
+                                            <View style={{ padding: 8 }}>
+                                                <Text style={{ fontSize: 9, color: COLORS.slate800, textAlign: 'justify', lineHeight: 1.5 }}>
+                                                    表示您的腎功能屬於一般狀態。請持續維持目前的血糖監測、藥物管理及併發症檢測計畫。建議<Text style={{ fontWeight: 'bold' }}>每年</Text>進行一次遠腎佳 DNlite 腎功能檢測。
+                                                </Text>
+                                            </View>
                                         </View>
-                                        <View style={[styles.cardBody, { backgroundColor: COLORS.bgTeal, padding: 12 }]}>
-                                            <Text style={styles.recText}>
-                                                您的腎功能處於正常範圍。請繼續目前的血糖監測、藥物管理和併發症篩檢計畫。建議<Text style={{ fontWeight: 'bold' }}>每年</Text>進行一次 DNlite 腎功能檢測，以及時評估腎病風險。
-                                            </Text>
+
+                                        {/* High Risk Card */}
+                                        <View style={{ width: '100%', borderWidth: 1, borderColor: COLORS.red, borderRadius: 6 }}>
+                                            <View style={{ backgroundColor: COLORS.red, paddingVertical: 6, paddingHorizontal: 8, borderTopLeftRadius: 5, borderTopRightRadius: 5 }}>
+                                                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 10 }}>高度風險</Text>
+                                            </View>
+                                            <View style={{ padding: 8 }}>
+                                                <Text style={{ fontSize: 9, color: COLORS.slate800, textAlign: 'justify', lineHeight: 1.5 }}>
+                                                    表示您的腎功能屬於對健康不利的狀態，請盡速與您的醫師聯繫、討論及擬定您的健康管理策略。建議<Text style={{ fontWeight: 'bold' }}>每 3-6 個月</Text>進行一次遠腎佳 DNlite 腎功能檢測。
+                                                </Text>
+                                            </View>
                                         </View>
                                     </View>
-                                    <View style={[styles.card, { borderColor: COLORS.red }]}>
-                                        <View style={[styles.cardTitleBlock, { backgroundColor: COLORS.red }]}>
-                                            <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>高度風險</Text>
+
+                                    {/* References */}
+                                    <View style={{ marginTop: 15 }}>
+                                        <View style={styles.sectionTitleWrapper}>
+                                            <View style={styles.sectionTitleBar} />
+                                            <Text style={styles.sectionTitle}>參考文獻</Text>
                                         </View>
-                                        <View style={[styles.cardBody, { backgroundColor: COLORS.bgRed, padding: 12 }]}>
-                                            <Text style={styles.recText}>
-                                                您的腎功能狀況可能對健康產生負面影響。請盡快聯繫醫師討論並制定個人化的健康管理計畫。透過積極的預防措施，您可以降低腎臟相關併發症的風險。建議<Text style={{ fontWeight: 'bold' }}>每 3 到 6 個月</Text>進行一次 DNlite 腎功能檢測。
-                                            </Text>
+                                        <View>
+                                            <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.6, marginBottom: 4 }}>• Nat Rev Nephrol. 2021 (17) 740-750.</Text>
+                                            <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.6, marginBottom: 4 }}>• Am J Nephrol. 2023 Oct 9. doi: 10.1159/000534514.</Text>
+                                            <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.6, marginBottom: 4 }}>• IFU: DNlite-DKD UPTM-FetA ELISA Kit (8103105).</Text>
+                                            <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.6 }}>• DNlite-DKD UPTM-FetA ELISA Kit: Technical Notice (TN8103105-04)</Text>
                                         </View>
                                     </View>
-                                </View>
-                                <View style={{ marginTop: 20 }}>
-                                    <Text style={{ fontSize: 8, fontWeight: 'bold', color: COLORS.slate400, marginBottom: 4, letterSpacing: 1 }}>REFERENCES</Text>
-                                    <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.4 }}>• Nat Rev Nephrol. 2021 (17) 740-750.</Text>
-                                    <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.4 }}>• Am J Nephrol. 2023 Oct 9. doi: 10.1159/000534514.</Text>
-                                    <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.4 }}>• IFU: DNlite-DKD UPTM-FetA ELISA Kit (8103105).</Text>
-                                    <Text style={{ fontSize: 8, color: COLORS.slate500, lineHeight: 1.4 }}>• DNlite-DKD UPTM-FetA ELISA Kit: Technical Notice (TN8103105-04)</Text>
                                 </View>
                             </View>
                             <View style={styles.footer}>
@@ -663,6 +821,6 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
                     </React.Fragment>
                 );
             })}
-        </Document>
+        </Document >
     );
 };
