@@ -10,6 +10,19 @@ import { PDFReport } from './PDFReport';
 import logoDnlite from './assets/logo_dnlite.png';
 import logoGlucare from './assets/logo_glucare.png';
 import logoNewcl from './assets/logo_newcl.jpg';
+import stamp0 from './assets/stamps/stamp_0.png';
+import stamp1 from './assets/stamps/stamp_1.png';
+import stamp2 from './assets/stamps/stamp_2.png';
+import stamp3 from './assets/stamps/stamp_3.png';
+import stamp4 from './assets/stamps/stamp_4.png';
+
+const STAMP_OPTIONS = {
+  "林翠仙": stamp0,
+  "古琪茗": stamp1,
+  "李家宏": stamp2,
+  "林珈妤": stamp3,
+  "曾盈慈": stamp4,
+};
 
 // -----------------------------------------------------------------------------
 // Component: DNlite Report Generator V23.1 (Vector PDF Version)
@@ -52,6 +65,7 @@ const GaugeChart = ({ value, threshold = 7.53, max = 300 }) => {
 
   const radius = 80;
   const center = 100;
+  const innerEdgeR = 72; // radius (80) - strokeWidth(16)/2
 
   const angleStart = -180;
   const angleEnd = 0;
@@ -86,14 +100,38 @@ const GaugeChart = ({ value, threshold = 7.53, max = 300 }) => {
   const baseRightY = center + needleBaseWidth * Math.sin(needleRad + Math.PI / 2);
   const needlePath = `M ${baseLeftX} ${baseLeftY} L ${tipX} ${tipY} L ${baseRightX} ${baseRightY} Z`;
 
+  // Inner Arc Path
+  const innerArcPath = describeArc(center, center, innerEdgeR, angleStart, angleEnd);
+
+  // Ticks
+  const tickValues = [1, 3, 10, 30, 100, 300];
+  const ticks = tickValues.map(v => {
+    const vLog = Math.log(v);
+    const vRatio = (vLog - minLog) / totalRange;
+    const angle = angleStart + (vRatio * angleRange);
+    const start = polarToCartesian(center, center, innerEdgeR, angle);
+    const end = polarToCartesian(center, center, innerEdgeR - 5, angle);
+    const textPos = polarToCartesian(center, center, innerEdgeR - 15, angle);
+    return { value: v, start, end, textPos };
+  });
+
   return (
     <div style={{ width: '300px', height: '160px', margin: '0 auto', position: 'relative' }}>
       <svg width="300" height="160" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
         <path d={describeArc(center, center, radius, angleStart, threshAngle)} fill="none" stroke={COLORS.teal} strokeWidth="16" />
         <path d={describeArc(center, center, radius, threshAngle, angleEnd)} fill="none" stroke={COLORS.red} strokeWidth="16" />
-        <text x={polarToCartesian(center, center, radius + 20, threshAngle).x} y={polarToCartesian(center, center, radius + 20, threshAngle).y} textAnchor="middle" fontSize="10" fill="#64748b" fontWeight="bold">{threshold}</text>
-        <text x={polarToCartesian(center, center, radius + 20, angleStart).x} y={polarToCartesian(center, center, radius + 20, angleStart).y + 5} textAnchor="start" fontSize="10" fill="#94a3b8">1</text>
-        <text x={polarToCartesian(center, center, radius + 20, angleEnd).x} y={polarToCartesian(center, center, radius + 20, angleEnd).y + 5} textAnchor="end" fontSize="10" fill="#94a3b8">300</text>
+
+        {/* Inner Black Border */}
+        <path d={innerArcPath} fill="none" stroke="black" strokeWidth="1" />
+
+        {/* Mask/Ticks */}
+        {ticks.map((t, i) => (
+          <g key={i}>
+            <line x1={t.start.x} y1={t.start.y} x2={t.end.x} y2={t.end.y} stroke="black" strokeWidth="1" />
+            <text x={t.textPos.x} y={t.textPos.y + 4} textAnchor="middle" fontSize="8" fill="#64748b" fontWeight="bold" style={{ fontFamily: 'sans-serif' }}>{t.value}</text>
+          </g>
+        ))}
+
         <path d={needlePath} fill={COLORS.needle} />
         <circle cx={center} cy={center} r="8" fill={COLORS.needle} />
       </svg>
@@ -169,42 +207,125 @@ export default function App() {
         return 0;
       };
 
-      const keyUptm = findKey("uPTM") || findKey("FetA");
-      const keyUcr = findKey("UCr") || findKey("Creatinine");
-      const keyDnlite = findKey("DNlite");
+      const rawUptm = obj[findKey("uPTM")] || obj[findKey("FetA")] || "0";
+      const rawUcr = obj[findKey("Creatinine")] || obj[findKey("UCr")] || "1";
 
-      const rawUptm = obj[keyUptm];
-      const rawUcr = obj[keyUcr];
-      const valUptm = parseNum(rawUptm);
-      const valUcr = parseNum(rawUcr);
-      let valDnlite = parseNum(obj[keyDnlite]);
+      const valUptm = parseFloat(rawUptm);
+      const valUcr = parseFloat(rawUcr);
 
-      // Calculate DNlite if missing but raw values exist
-      if ((valDnlite === 0 || isNaN(valDnlite)) && valUcr !== 0) {
-        valDnlite = parseFloat((valUptm / valUcr).toFixed(2));
+      let finalDispUptm = isNaN(valUptm) ? rawUptm : valUptm.toFixed(2); // Default
+      let finalDispDnlite = "";
+      let finalValDnlite = 0;
+
+      // Custom Conditions logic
+      const isLowCondition = (String(rawUptm).includes('<')) || (!isNaN(valUptm) && valUptm < 5.428);
+      const isHighCondition = (String(rawUptm).includes('>')) || (!isNaN(valUptm) && valUptm > 250);
+
+      if (isLowCondition) {
+        finalDispUptm = "<5.428";
+        finalDispDnlite = "<7.53";
+        finalValDnlite = 0; // Low Risk
+      } else if (isHighCondition) {
+        finalDispUptm = "> 250";
+        finalDispDnlite = ">7.53";
+        finalValDnlite = 999; // High Risk
+      } else {
+        // Normal Calc
+        finalDispUptm = !isNaN(valUptm) ? valUptm.toFixed(2) : rawUptm;
+        if (valUcr > 0 && !isNaN(valUptm)) {
+          finalValDnlite = valUptm / valUcr;
+          finalDispDnlite = finalValDnlite.toFixed(2);
+        } else {
+          finalDispDnlite = "-";
+          finalValDnlite = 0;
+        }
       }
 
-      obj._disp_uptm = rawUptm || valUptm.toString();
-      obj._disp_ucr = rawUcr || valUcr.toString();
-      obj._val_dnlite = valDnlite;
-      obj._disp_dnlite = valDnlite.toFixed(2);
+      obj._val_uptm = valUptm;
+      obj._val_ucr = valUcr;
+      obj._disp_uptm = finalDispUptm;
+      obj._disp_ucr = isNaN(valUcr) ? rawUcr : valUcr.toFixed(2);
+      obj._val_dnlite = finalValDnlite;
+      obj._disp_dnlite = finalDispDnlite;
 
-      obj._name = obj[findKey("姓名")] || obj[findKey("Name")] || "Unknown";
-      obj._age = obj[findKey("年齡")] || obj[findKey("Age")] || "-";
-      obj._gender = obj[findKey("性別")] || obj[findKey("Gender")] || obj[findKey("Sex")] || "-";
-      obj._date = obj[findKey("日期")] || obj[findKey("Date")] || obj[findKey("Sampling")] || reportConfig.date;
-      obj._reportDate = obj[findKey("Report Date")] || obj[findKey("ReportDate")] || obj._date;
-      obj._inspector = obj[findKey("Lab Director")] || obj[findKey("Director")] || obj[findKey("Inspector")] || reportConfig.inspector;
-      obj._unit = obj[findKey("單位")] || obj[findKey("Unit")] || obj[findKey("Clinic")] || "GluCare. Health";
+      // Logic completed above. Redundant block removed.
+
+      // Update key mapping to be more specific for Chinese headers
+      obj._name = obj[findKey("姓名")] || obj[findKey("Name")] || obj[findKey("Patient")] || "Unknown";
+      obj._gender = obj[findKey("性別")] || obj[findKey("Gender")] || obj[findKey("Sex")] || "Unknown";
+
+      const formatDate = (input) => {
+        if (!input) return "";
+        let date;
+        // Check if input is an Excel serial number (valid range: 1 to ~100000)
+        // Excel serial 1 = 1900-01-01, serial 100000 ≈ year 2173
+        if (typeof input === 'number' && input >= 1 && input < 100000) {
+          // Excel serial number
+          date = new Date(Math.round((input - 25569) * 864e5));
+        } else {
+          // Handle string input
+          let dateStr = String(input).trim();
+          // Normalize slash-separated dates (e.g., "1980/1/1" -> "1980-01-01")
+          if (dateStr.includes('/')) {
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+              const year = parts[0].padStart(4, '0');
+              const month = parts[1].padStart(2, '0');
+              const day = parts[2].padStart(2, '0');
+              dateStr = `${year}-${month}-${day}`;
+            }
+          }
+          date = new Date(dateStr);
+        }
+        if (isNaN(date.getTime())) return input;
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      };
+
+      const rawDob = obj[findKey("出生")] || obj[findKey("Birth")] || obj[findKey("DOB")] || "1960-01-01";
+      obj._dob = formatDate(rawDob);
+
+      // Calculate Age from DOB
+      const birthDate = new Date(obj._dob);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      obj._age = age.toString();
+
+      const rawDate = obj[findKey("採檢")] || obj[findKey("Sampling")] || obj[findKey("日期")] || obj[findKey("Date")] || reportConfig.date;
+      obj._date = formatDate(rawDate);
+
+      // Report Date = Today (Generation Date)
+      obj._reportDate = formatDate(new Date());
+
+      obj._inspector = obj[findKey("實驗室主管")] || obj[findKey("Lab Director")] || obj[findKey("Director")] || obj[findKey("Inspector")] || reportConfig.inspector;
+      obj._unit = obj[findKey("送檢單位")] || obj[findKey("單位")] || obj[findKey("Unit")] || obj[findKey("Clinic")] || "GluCare. Health";
       obj._mrn = obj[findKey("病歷")] || obj[findKey("MRN")] || "N/A";
-      obj._reportNo = obj[findKey("報告")] || obj[findKey("Report")] || String(1000 + idx);
+      obj._reportNo = obj[findKey("報告編號")] || obj[findKey("報告")] || obj[findKey("Report")] || String(1000 + idx);
+
+      obj._id = obj[findKey("身分")] || obj[findKey("ID")] || "A123456789";
+
+      // Stamp Processing
+      const mtKey = findKey("醫事") || findKey("MedTech") || findKey("檢驗師");
+      const sigKey = findKey("簽署") || findKey("Signatory");
+
+      obj._medTechName = (obj[mtKey] || "林翠仙").toString().trim(); // Default
+      obj._signatoryName = (obj[sigKey] || obj[findKey("Inspector")] || "林翠仙").toString().trim(); // Default
+
+      obj._medTechStamp = STAMP_OPTIONS[obj._medTechName] || null;
+      obj._signatoryStamp = STAMP_OPTIONS[obj._signatoryName] || null;
 
       return obj;
     }).filter(row => row._name && row._name !== "Unknown");
 
     // Update global config from first row if available
     if (processed.length > 0) {
-      if (processed[0]._inspector) reportConfig.inspector = processed[0]._inspector;
+      if (processed[0]._inspector) reportConfig.inspector = processed[0]._inspector; // Keep for backward compat?
       if (processed[0]._reportDate) reportConfig.date = processed[0]._reportDate;
     }
 
@@ -247,22 +368,46 @@ export default function App() {
 
   const handleDownloadTemplate = () => {
     const headers = [
-      "Clinic", "Sampling Date", "Report Date", "Report Number",
-      "Patient Name", "MRN", "Gender", "Age",
-      "Lab. Director", "uPTM-FetA", "Urine creatinine (UCr)", "DNlite (uPTM-FetA/UCr)"
+      "送檢單位", "採檢日期", "報告編號",
+      "姓名", "病歷號碼", "性別", "出生日期", "身分證字號",
+      "uPTM-FetA", "Urine creatinine (UCr)", "DNlite (uPTM-FetA/UCr)",
+      "醫事檢驗師", "報告簽署人"
     ];
     const data = [
       headers,
-      ["GluCare. Health", "2025-12-21", "2025-12-21", "1001", "John Doe", "MRN12345", "Male", "60", "Dr. Wang", "550", "1.18", ""]
+      ["GluCare. Health", "2024-12-25", "1001", "陳小明", "MRN001", "男", "1980-01-01", "A123456789", "550", "1.2", "", "林翠仙", "古琪茗"]
     ];
     const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = [
+      { wch: 20 }, // 送檢單位
+      { wch: 15 }, // 採檢日期
+      { wch: 15 }, // 報告編號
+      { wch: 15 }, // 姓名
+      { wch: 15 }, // 病歷號碼
+      { wch: 10 }, // 性別
+      { wch: 15 }, // 出生日期
+      { wch: 15 }, // 身分證字號
+      { wch: 15 }, // uPTM-FetA
+      { wch: 25 }, // Urine creatinine
+      { wch: 25 }, // DNlite
+      { wch: 15 }, // 醫事檢驗師
+      { wch: 15 }  // 報告簽署人
+    ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
     XLSX.writeFile(wb, "DNlite_Report_Template.xlsx");
   };
 
   const loadSample = () => {
-    const sample = [["姓名", "Age", "Gender", "Clinic", "Sampling Date", "MRN", "uPTM-FetA", "UCr"], ["John Doe", "60", "Male", "GluCare. Health", "2025-10-28", "16656", "550", "1.18"], ["Jane Smith", "55", "Female", "GluCare. Health", "2025-10-28", "16657", "120.5", "0.8"]];
+    // Updated sample without "Age" (col 1) and "Report Date" (which was not in sample but headers)
+    // Old Sample: ["姓名", "年齡", "性別", "出生日期", "身分證字號", "送檢單位", "採檢日期", "病歷號碼", "uPTM-FetA", "UCr", "醫事檢驗師", "報告簽署人"]
+    // New Sample: ["姓名", "性別", "出生日期", "身分證字號", "送檢單位", "採檢日期", "病歷號碼", "uPTM-FetA", "UCr", "醫事檢驗師", "報告簽署人"]
+    const sample = [
+      ["送檢單位", "採檢日期", "報告編號", "姓名", "病歷號碼", "性別", "出生日期", "身分證字號", "uPTM-FetA", "UCr", "醫事檢驗師", "報告簽署人"],
+      ["XXX", "2024-12-24", "1001", "陳大文 (一般)", "88001", "男", "1980/5/20", "A123456789", "100", "1.0", "林翠仙", "古琪茗"],
+      ["XXX", "2024/12/24", "1002", "李小美 (低值)", "88002", "女", "1990/8/15", "B234567890", "< 5.428", "1.0", "李家宏", "林珈妤"],
+      ["XXX", "2024-12-24", "1003", "王大明 (高值)", "88003", "男", "1954/4/23", "C345678901", "300", "1.5", "曾盈慈", "林翠仙"]
+    ];
     processData(sample);
   };
 
@@ -274,8 +419,18 @@ export default function App() {
       const useLogo = logo || logoDnlite;
       const useCompanyLogo = companyLogo || logoGlucare;
 
-      const blob = await pdf(<PDFReport data={data[0]} logo={useLogo} companyLogo={useCompanyLogo} inspector={reportConfig.inspector} />).toBlob();
-      saveAs(blob, `${data[0]._name}_Report.pdf`);
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const reportDate = `${y}-${m}-${d}`;
+      const dateStr = `${y}${m}${d}`;
+
+      // Overwrite report date with generation date
+      const printData = { ...data[0], _reportDate: reportDate };
+
+      const blob = await pdf(<PDFReport data={printData} logo={useLogo} companyLogo={useCompanyLogo} inspector={reportConfig.inspector} />).toBlob();
+      saveAs(blob, `${dateStr}_${printData._reportNo}.pdf`);
     } catch (e) { console.error(e); alert("生成失敗: " + e.message); }
     finally { setIsGenerating(false); setProgress(""); }
   };
@@ -288,19 +443,27 @@ export default function App() {
       const useLogo = logo || logoDnlite;
       const useCompanyLogo = companyLogo || logoGlucare;
 
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const reportDate = `${y}-${m}-${d}`;
+      const dateStr = `${y}${m}${d}`;
+
       for (let i = 0; i < data.length; i++) {
         const person = data[i];
+        const printData = { ...person, _reportDate: reportDate };
         setProgress(`${person._name} (${i + 1}/${data.length})`);
 
         // Allow UI update
         await new Promise(r => setTimeout(r, 0));
 
         // Generate Vector PDF
-        const blob = await pdf(<PDFReport data={person} logo={useLogo} companyLogo={useCompanyLogo} inspector={reportConfig.inspector} />).toBlob();
-        zip.file(`${person._name}_Report.pdf`, blob);
+        const blob = await pdf(<PDFReport data={printData} logo={useLogo} companyLogo={useCompanyLogo} inspector={reportConfig.inspector} />).toBlob();
+        zip.file(`${dateStr}_${person._reportNo}.pdf`, blob);
       }
       const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, `DNlite_Reports_Vector.zip`);
+      saveAs(content, `${dateStr}_DNlite_Report_NewCL.ZIP`);
     } catch (e) { console.error(e); alert("生成失敗: " + e.message); }
     finally { setIsGenerating(false); setProgress(""); }
   };
@@ -323,6 +486,14 @@ export default function App() {
             <button onClick={loadSample} className="text-sm font-medium text-slate-500 hover:text-teal-600 flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition"><RefreshCw className="w-4 h-4" /> 載入範例 (Sample)</button>
           </div>
         </div>
+
+        <div className="mt-12 text-center max-w-2xl px-4">
+          <h3 className="text-xs font-bold text-slate-500 mb-1">免責聲明 / Disclaimer</h3>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            本報告產生器僅供數據輸出使用，請務必仔細檢查內容正確性。若因數據輸入錯誤或格式轉換異常導致之錯誤，本系統概不負責。<br />
+            This report generator is for data output only. Please verify content accuracy carefully. We are not responsible for any errors or damages.
+          </p>
+        </div>
       </div>
     );
   }
@@ -333,20 +504,7 @@ export default function App() {
       <div className="print-hidden fixed top-0 left-0 right-0 bg-white/95 backdrop-blur shadow-sm z-50 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4">
           <button onClick={() => setStep(1)} className="text-slate-500 hover:text-slate-900 font-medium text-sm">← 返回</button>
-          <div className="flex items-center gap-2">
-            {logo ? (
-              <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200"><span className="text-[10px] font-bold text-slate-500">DNlite OK</span><button onClick={() => { setLogo(null); safeStorage.removeItem('dnlite_report_logo'); }}><X className="w-3 h-3 text-slate-400" /></button></div>
-            ) : (
-              <label className="flex items-center gap-2 cursor-pointer bg-slate-50 px-3 py-1 rounded border border-slate-200 text-xs hover:bg-slate-100" title="Upload DNlite Logo"><ImageIcon className="w-3 h-3" /> DNlite Logo<input type="file" accept="image/*" className="hidden" onChange={(e) => handleLogoUpload(e, 'main')} /></label>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {companyLogo ? (
-              <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200"><span className="text-[10px] font-bold text-slate-500">Co. OK</span><button onClick={() => { setCompanyLogo(null); safeStorage.removeItem('dnlite_company_logo'); }}><X className="w-3 h-3 text-slate-400" /></button></div>
-            ) : (
-              <label className="flex items-center gap-2 cursor-pointer bg-slate-50 px-3 py-1 rounded border border-slate-200 text-xs hover:bg-slate-100" title="Upload Company Logo"><Building2 className="w-3 h-3" /> Company Logo<input type="file" accept="image/*" className="hidden" onChange={(e) => handleLogoUpload(e, 'company')} /></label>
-            )}
-          </div>
+
         </div>
         <div className="flex gap-2">
           <button onClick={handleDownloadSingle} disabled={isGenerating} className="px-3 py-2 bg-white border border-slate-300 rounded text-sm hover:bg-slate-50 flex items-center gap-1 opacity-90"><FileDown className="w-4 h-4" /> 預覽 PDF (Preview)</button>
@@ -370,35 +528,57 @@ export default function App() {
               <div className="report-sheet">
                 {/* Header */}
                 <div className="header-section">
-                  <div className="flex flex-col justify-between h-full space-y-4">
-                    <div className="h-16 w-auto max-w-[220px] flex items-center mb-2">
-                      {logo ? <img src={logo} alt="Logo" className="h-full object-contain object-left" /> : <DefaultDNliteLogo />}
+                  <div className="flex flex-col justify-end h-full w-full pb-2">
+                    <div className="flex justify-between items-end">
+                      <div className="flex flex-col">
+                        <div className="flex items-end gap-3 mb-2">
+                          <div className="h-10 flex items-center">
+                            {logo && <img src={logo} alt="Logo" className="h-full object-contain object-left" />}
+                          </div>
+                          <span className="text-2xl font-bold text-slate-800 tracking-wide leading-none pb-1">DNlite<sup className="text-xs">®</sup> <span style={{ color: COLORS.teal }}>遠腎佳</span></span>
+                        </div>
+                        <div className="text-3xl font-bold text-slate-900 tracking-tight mt-1">腎功能預後檢測報告</div>
+                      </div>
+                      <div className="h-14 w-[150px] flex justify-end items-end mb-1">
+                        {companyLogo ? <img src={companyLogo} alt="Company Logo" className="h-full object-contain object-right" /> : <div className="text-[10px] text-slate-300 border border-dashed border-slate-300 rounded px-2 py-1 w-full text-center">Company Logo Area</div>}
+                      </div>
                     </div>
-                    <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-tight"><span style={{ color: COLORS.teal }}>遠腎佳</span>糖尿病腎病預後檢測</h1>
-                  </div>
-                  <div className="h-16 w-[180px] flex justify-end items-start mt-2">
-                    {companyLogo ? <img src={companyLogo} alt="Company Logo" className="h-full object-contain object-right" /> : <div className="text-xs text-slate-300 border border-dashed border-slate-300 rounded px-2 py-4 w-full text-center">Company Logo Area</div>}
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="content-section">
-                  <div className="mb-8">
+                  <div className="mb-6">
                     <h3 className="text-sm font-bold text-slate-800 mb-2 border-l-4 pl-2" style={{ borderColor: COLORS.teal }}>個人資訊</h3>
-                    <div className="grid grid-cols-3 border-t border-l border-slate-300">
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>診所/單位</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>採檢日期</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>報告編號</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 text-center">{person._unit}</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 text-center">{person._date}</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 text-center">{person._reportNo}</div>
-
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>姓名 / 病歷號</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>性別</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-[10px] font-bold text-slate-600 text-center" style={{ backgroundColor: '#dce3eb' }}>年齡</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 font-bold text-center">{person._name} <span className="font-normal text-slate-400">/ {person._mrn}</span></div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 text-center">{person._gender}</div>
-                      <div className="p-2 border-b border-r border-slate-300 text-sm text-slate-800 text-center">{person._age}</div>
+                    <div className="border border-slate-300 text-sm">
+                      {/* Row 1 Headers (3 Cols) */}
+                      <div className="flex border-b border-slate-300 bg-slate-100">
+                        <div className="w-1/3 border-r border-slate-300 p-1 text-center font-bold text-slate-500 text-xs flex items-center justify-center">送檢單位</div>
+                        <div className="w-1/3 border-r border-slate-300 p-1 text-center font-bold text-slate-500 text-xs flex items-center justify-center">採檢日期</div>
+                        <div className="w-1/3 p-1 text-center font-bold text-slate-500 text-xs flex items-center justify-center">報告編號</div>
+                      </div>
+                      {/* Row 1 Values (3 Cols) */}
+                      <div className="flex border-b border-slate-300">
+                        <div className="w-1/3 border-r border-slate-300 p-1 text-center text-slate-900 text-sm flex items-center justify-center">{person._unit}</div>
+                        <div className="w-1/3 border-r border-slate-300 p-1 text-center text-slate-900 text-sm flex items-center justify-center">{person._date}</div>
+                        <div className="w-1/3 p-1 text-center text-slate-900 text-sm flex items-center justify-center">{person._reportNo}</div>
+                      </div>
+                      {/* Row 2 Headers (5 Cols) */}
+                      <div className="flex border-b border-slate-300 bg-slate-100">
+                        <div className="w-1/5 border-r border-slate-300 p-1 text-center font-bold text-slate-500 text-xs flex items-center justify-center">姓名</div>
+                        <div className="w-1/5 border-r border-slate-300 p-1 text-center font-bold text-slate-500 text-xs flex items-center justify-center">病歷號碼</div>
+                        <div className="w-1/5 border-r border-slate-300 p-1 text-center font-bold text-slate-500 text-xs flex items-center justify-center">性別</div>
+                        <div className="w-1/5 border-r border-slate-300 p-1 text-center font-bold text-slate-500 text-xs flex items-center justify-center">出生日期</div>
+                        <div className="w-1/5 p-1 text-center font-bold text-slate-500 text-xs flex items-center justify-center">身分證字號</div>
+                      </div>
+                      {/* Row 2 Values (5 Cols) */}
+                      <div className="flex">
+                        <div className="w-1/5 border-r border-slate-300 p-1 text-center text-slate-900 font-bold text-sm flex items-center justify-center">{person._name}</div>
+                        <div className="w-1/5 border-r border-slate-300 p-1 text-center text-slate-900 text-sm flex items-center justify-center">{person._mrn}</div>
+                        <div className="w-1/5 border-r border-slate-300 p-1 text-center text-slate-900 text-sm flex items-center justify-center">{person._gender}</div>
+                        <div className="w-1/5 border-r border-slate-300 p-1 text-center text-slate-900 text-sm flex items-center justify-center">{person._dob}</div>
+                        <div className="w-1/5 p-1 text-center text-slate-900 text-sm flex items-center justify-center">{person._id}</div>
+                      </div>
                     </div>
                   </div>
 
@@ -446,15 +626,65 @@ export default function App() {
 
                   <div className="flex-1">
                     <div className="border rounded-xl p-6 bg-white" style={{ borderColor: statusColor, backgroundColor: isRisk ? COLORS.bgRed : COLORS.bgTeal }}>
-                      <p className="text-sm text-slate-700 leading-relaxed text-justify">{isRisk ? "您的腎功能狀況可能對健康產生負面影響。請盡快聯繫醫師討論並制定個人化的健康管理計畫。透過積極的預防措施，您可以降低腎臟相關併發症的風險。建議每 3 到 6 個月進行一次 DNlite 腎功能檢測。" : "您的腎功能處於正常範圍。請繼續目前的血糖監測、藥物管理和併發症篩檢計畫。建議每年進行一次 DNlite 腎功能檢測，以及時評估腎病風險。"}</p>
+                      <p className="text-sm text-slate-700 leading-relaxed text-justify">
+                        {isRisk ? (
+                          <>
+                            <span>若您為<span style={{ color: COLORS.red, fontWeight: 'bold' }}>二型糖尿病患</span>，5 年腎功能惡化的風險是其他人的 9.5 倍，末期腎病變風險為 3.5 倍。</span>
+                            <br />
+                            <span>請與您的醫師討論及擬定健康管理策略，並且每三個月追蹤檢驗 DNlite。</span>
+                            <br /><br />
+                            <span>若您<span style={{ color: COLORS.red, fontWeight: 'bold' }}>非糖尿病患</span>，5 年腎功能惡化的風險是其他人的 4 倍，末期腎病變風險為 1.6 倍。</span>
+                            <br />
+                            <span>請考慮於三個月內再檢測一次 DNlite，如仍為高風險，建議您尋求醫師協助，綜合評估健康狀況。</span>
+                          </>
+                        ) : (
+                          "您的腎功能處於正常範圍。請繼續目前的血糖監測、藥物管理和併發症篩檢計畫。建議每年進行一次 DNlite 腎功能檢測，以及時評估腎病風險。"
+                        )}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="footer-section">
-                  <div className="flex justify-between items-end h-full pt-4">
-                    <div><div className="text-xs text-slate-400 mb-2">實驗室主管</div><div className="font-serif text-xl italic text-slate-800 border-b border-slate-300 pb-1 px-2 inline-block min-w-[150px] text-center">{reportConfig.inspector}</div></div>
-                    <div className="text-right"><div className="text-xs text-slate-400 mb-2">報告日期</div><div className="text-sm text-slate-800 font-medium">{reportConfig.date}</div></div>
+                <div className="footer-section mt-4 border-t border-slate-300 pt-2">
+                  <div className="flex items-start">
+                    {/* Med Tech */}
+                    <div className="flex border border-slate-300 mr-4">
+                      <div className="w-[30px] bg-slate-100 text-[8px] text-slate-500 flex items-center justify-center p-1 leading-tight border-r border-slate-300">醫<br />事<br />檢<br />驗<br />師</div>
+                      <div className="w-[100px] h-[60px] flex items-center justify-center p-1">
+                        {person._medTechStamp ? (
+                          <img src={person._medTechStamp} alt="Stamp" className="w-full h-full object-contain" />
+                        ) : (
+                          <span className="text-sm">{person._medTechName}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Signatory */}
+                    <div className="flex border border-slate-300 mr-4">
+                      <div className="w-[30px] bg-slate-100 text-[8px] text-slate-500 flex items-center justify-center p-1 leading-tight border-r border-slate-300">報<br />告<br />簽<br />署<br />人</div>
+                      <div className="w-[100px] h-[60px] flex items-center justify-center p-1">
+                        {person._signatoryStamp ? (
+                          <img src={person._signatoryStamp} alt="Stamp" className="w-full h-full object-contain" />
+                        ) : (
+                          <span className="text-sm">{reportConfig.inspector || person._signatoryName}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Report Date */}
+                    <div className="flex border border-slate-300 mr-4">
+                      <div className="w-[30px] bg-slate-100 text-[8px] text-slate-500 flex items-center justify-center p-1 leading-tight border-r border-slate-300">報<br />告<br />日<br />期</div>
+                      <div className="w-[100px] h-[60px] flex items-center justify-center p-1">
+                        <span className="text-sm">{person._reportDate}</span>
+                      </div>
+                    </div>
+
+                    {/* Lab Info */}
+                    <div className="flex-1 flex flex-col justify-center text-[10px] text-slate-500 ml-4">
+                      <div>欣奕醫事檢驗所 第二實驗室</div>
+                      <div>新北市永和區中山路一段 168 號 11 樓</div>
+                      <div>TEL 02-29209181</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -462,46 +692,126 @@ export default function App() {
               {/* --- PAGE 2 --- */}
               <div className="report-sheet relative box-border overflow-hidden flex flex-col">
                 <div className="h-[90px] px-10 pt-8 flex justify-between items-center bg-white flex-none">
-                  <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">風險定義</h1>
-                  <div className="font-bold text-sm border px-3 py-1 rounded" style={{ color: COLORS.teal, borderColor: COLORS.teal }}>附錄</div>
+                  <h1 className="text-2xl font-extrabold text-white tracking-tight px-4 py-1 rounded" style={{ backgroundColor: COLORS.teal }}>風險定義參考</h1>
+
                 </div>
-                <div className="flex-1 px-10 py-10 flex flex-col justify-between">
-                  <div>
-                    <div className="grid grid-cols-2 gap-10 mb-4">
+                <div className="flex-1 px-10 pt-4 pb-10 flex flex-col justify-start">
+
+                  {/* Top Block: Risk Definitions */}
+                  {/* Top Block: Risk Definitions */}
+                  <div className="mb-4">
+                    <div className="grid grid-cols-2 gap-8">
+                      {/* Left Clean: Renal Function Worsening */}
                       <div className="flex flex-col">
-                        <h3 className="text-base font-bold text-slate-800 mb-3 border-l-4 border-slate-800 pl-3">腎功能惡化</h3>
-                        <p className="text-xs text-slate-600 leading-relaxed mb-6 text-justify h-12">若您被歸類為 <span className="font-bold" style={{ color: COLORS.red }}>高度風險</span>，您在 5 年內腎功能惡化的風險是一般糖尿病患者的 <span className="font-bold text-sm" style={{ color: COLORS.red }}>9.5 倍</span>。</p>
-                        <div className="rounded-xl p-4 flex justify-center items-end h-[150px] bg-slate-50"><RiskBarChart value={1} label="低" color={COLORS.teal} /><RiskBarChart value={9.5} label="高" color={COLORS.red} /></div>
-                        <div className="text-center text-[10px] text-slate-400 mt-2 font-medium">發生率比</div>
+                        <div className="flex items-center mb-2 mt-4"><div className="w-1 h-4 bg-teal-500 mr-2"></div><h3 className="font-bold text-slate-800 text-sm">腎功能惡化風險</h3></div>
+                        <div className="text-sm text-slate-700 mb-3 font-bold">若 DNlite 遠腎佳檢測結果為「高度風險」：</div>
+                        <div className="mb-4 space-y-2">
+                          <div className="flex items-start"><div className="w-1.5 h-1.5 bg-teal-500 mr-2 mt-1.5 flex-none mb-1"></div><div className="text-xs text-slate-700 leading-snug"><span className="text-red-600 font-bold">二型糖尿病患</span><br />5年內腎功能惡化的風險為一般二型糖尿病患的 <span className="font-bold text-slate-900">9.5 倍</span></div></div>
+                          <div className="flex items-start"><div className="w-1.5 h-1.5 bg-teal-500 mr-2 mt-1.5 flex-none mb-1"></div><div className="text-xs text-slate-700 leading-snug"><span className="text-red-600 font-bold">非糖尿病患</span><br />5年內腎功能惡化的風險為一般非糖尿病患的 <span className="font-bold text-slate-900">4.0 倍</span></div></div>
+                        </div>
+
+                        {/* Charts Row */}
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          {/* Chart 1: Type 2 */}
+                          <div className="bg-slate-50 p-2 rounded border border-slate-200 flex flex-col items-center">
+                            <div className="text-xs font-bold text-slate-500 mb-4">二型糖尿病</div>
+                            <div className="flex items-end justify-center gap-6 h-[80px] w-full">
+                              <div className="flex flex-col items-center"><span className="text-[10px] font-bold text-slate-600">1</span><div className="w-12 h-2 bg-teal-500 rounded-t-sm"></div><span className="text-[8px] text-slate-400 mt-1">低度風險</span></div>
+                              <div className="flex flex-col items-center"><span className="text-[10px] font-bold text-red-600">9.5</span><div className="w-12 h-16 bg-red-500 rounded-t-sm"></div><span className="text-[8px] text-slate-600 mt-1 font-bold">高度風險</span></div>
+                            </div>
+                          </div>
+                          {/* Chart 2: Non-DM */}
+                          <div className="bg-slate-50 p-2 rounded border border-slate-200 flex flex-col items-center">
+                            <div className="text-xs font-bold text-slate-500 mb-4">非糖尿病</div>
+                            <div className="flex items-end justify-center gap-6 h-[80px] w-full">
+                              <div className="flex flex-col items-center"><span className="text-[10px] font-bold text-slate-600">1</span><div className="w-12 h-2 bg-teal-500 rounded-t-sm"></div><span className="text-[8px] text-slate-400 mt-1">低度風險</span></div>
+                              <div className="flex flex-col items-center"><span className="text-[10px] font-bold text-red-600">4.0</span><div className="w-12 h-8 bg-red-500 rounded-t-sm"></div><span className="text-[8px] text-slate-600 mt-1 font-bold">高度風險</span></div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Right Clean: ESRD Risk */}
                       <div className="flex flex-col">
-                        <h3 className="text-base font-bold text-slate-800 mb-3 border-l-4 border-slate-800 pl-3">末期腎病變 (ESRD)</h3>
-                        <p className="text-xs text-slate-600 leading-relaxed mb-6 text-justify h-12">若您被歸類為 <span className="font-bold" style={{ color: COLORS.red }}>高度風險</span>，您在 5 年內發展為末期腎病變的風險是一般糖尿病患者的 <span className="font-bold text-sm" style={{ color: COLORS.red }}>3.5 倍</span>。</p>
-                        <div className="rounded-xl p-4 flex justify-center items-end h-[150px] bg-slate-50"><RiskBarChart value={1} label="低" color={COLORS.teal} /><RiskBarChart value={3.5} label="高" color={COLORS.red} /></div>
-                        <div className="text-center text-[10px] text-slate-400 mt-2 font-medium">發生率比</div>
+                        <div className="flex items-center mb-2 mt-4"><div className="w-1 h-4 bg-teal-500 mr-2"></div><h3 className="font-bold text-slate-800 text-sm">末期腎病變風險</h3></div>
+                        <div className="text-sm text-slate-700 mb-3 font-bold">若 DNlite 遠腎佳檢測結果為「高度風險」：</div>
+                        <div className="mb-4 space-y-2">
+                          <div className="flex items-start"><div className="w-1.5 h-1.5 bg-teal-500 mr-2 mt-1.5 flex-none mb-1"></div><div className="text-xs text-slate-700 leading-snug"><span className="text-red-600 font-bold">二型糖尿病患</span><br />5年內末期腎病變的風險為一般二型糖尿病患的 <span className="font-bold text-slate-900">3.5 倍</span></div></div>
+                          <div className="flex items-start"><div className="w-1.5 h-1.5 bg-teal-500 mr-2 mt-1.5 flex-none mb-1"></div><div className="text-xs text-slate-700 leading-snug"><span className="text-red-600 font-bold">非糖尿病患</span><br />5年內末期腎病變的風險為一般非糖尿病患的 <span className="font-bold text-slate-900">1.6 倍</span></div></div>
+                        </div>
+
+                        {/* Charts Row */}
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          {/* Chart 3: Type 2 */}
+                          <div className="bg-slate-50 p-2 rounded border border-slate-200 flex flex-col items-center">
+                            <div className="text-xs font-bold text-slate-500 mb-4">二型糖尿病</div>
+                            <div className="flex items-end justify-center gap-6 h-[80px] w-full">
+                              <div className="flex flex-col items-center"><span className="text-[10px] font-bold text-slate-600">1</span><div className="w-12 h-2 bg-teal-500 rounded-t-sm"></div><span className="text-[8px] text-slate-400 mt-1">低度風險</span></div>
+                              <div className="flex flex-col items-center"><span className="text-[10px] font-bold text-red-600">3.5</span><div className="w-12 h-6 bg-red-500 rounded-t-sm"></div><span className="text-[8px] text-slate-600 mt-1 font-bold">高度風險</span></div>
+                            </div>
+                          </div>
+                          {/* Chart 4: Non-DM */}
+                          <div className="bg-slate-50 p-2 rounded border border-slate-200 flex flex-col items-center">
+                            <div className="text-xs font-bold text-slate-500 mb-4">非糖尿病</div>
+                            <div className="flex items-end justify-center gap-6 h-[80px] w-full">
+                              <div className="flex flex-col items-center"><span className="text-[10px] font-bold text-slate-600">1</span><div className="w-12 h-2 bg-teal-500 rounded-t-sm"></div><span className="text-[8px] text-slate-400 mt-1">低度風險</span></div>
+                              <div className="flex flex-col items-center"><span className="text-[10px] font-bold text-red-600">1.6</span><div className="w-12 h-3 bg-red-500 rounded-t-sm"></div><span className="text-[8px] text-slate-600 mt-1 font-bold">高度風險</span></div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-[10px] text-slate-500 italic leading-snug bg-slate-50 p-3 rounded border border-slate-100"><b>註 1:</b> 「腎功能惡化」臨床定義為估計腎絲球過濾率 (eGFR) 下降超過 30%。<br /><b>註 2:</b> 「末期腎病變」臨床定義為需要腎臟移植、透析，或血清肌酸酐在 3 個月內增加超過 50%。</div>
                   </div>
-                  <div className="mt-6">
-                    <h3 className="text-base font-bold text-slate-800 mb-4 border-l-4 pl-3" style={{ borderColor: COLORS.teal }}>重要注意事項與建議追蹤</h3>
+
+                  {/* Notes Section */}
+                  <div className="mt-4 border-t border-slate-200 pt-3">
+                    <div className="text-[10px] text-slate-500 leading-snug space-y-1">
+                      <div><span className="font-bold">備註 1:</span> 「腎功能惡化」臨床上以<span className="underline decoration-slate-300">腎絲球過濾率下降比例超過30%</span>表達</div>
+                      <div><span className="font-bold">備註 2:</span> 「末期腎病變」臨床上以<span className="underline decoration-slate-300">需腎移植、透析或3個月內血清肌酸酐增加50%以上</span>表達</div>
+                      <div><span className="font-bold">備註 3:</span> 台灣二型糖尿病患的慢性腎病變盛行率為 15%~18%，推估5年慢性腎病變發生率約為 5%~9%</div>
+                      <div><span className="font-bold">備註 4:</span> 台灣二型糖尿病患的末期腎病變盛行率為 5%~7%，推估5年末期腎病變發生率約為 1.25%~2.33%</div>
+                      <div><span className="font-bold">備註 5:</span> 台灣一般成年人的慢性腎病變盛行率為 10%~12%，推估5年慢性腎病變發生率約為 3.3%~6%</div>
+                      <div><span className="font-bold">備註 6:</span> 台灣一般成年人的末期腎病變盛行率為 0.35%~0.5%，推估5年末期腎病變發生率約為 0.09%~0.17%</div>
+                    </div>
+                  </div>
+
+                  {/* Precautions Section */}
+                  <div className="mt-6 flex-1 -mx-10 px-10 py-6">
+                    <div className="flex items-center mb-4"><div className="w-1 h-3.5 bg-teal-500 mr-2"></div><h3 className="font-bold text-slate-800 text-sm">注意事項及建議追蹤方式</h3></div>
                     <div className="flex flex-col gap-4">
-                      <div className="border rounded-xl overflow-hidden flex flex-col shadow-sm" style={{ borderColor: COLORS.teal }}>
-                        <div className="py-2 px-4 text-white text-sm font-bold flex items-center gap-2" style={{ backgroundColor: COLORS.teal }}><CheckCircle2 className="w-4 h-4" /> 低度風險</div>
-                        <div className="p-3 flex-1 flex flex-col justify-center" style={{ backgroundColor: COLORS.bgTeal }}><p className="text-xs text-slate-700 leading-relaxed text-justify">您的腎功能處於正常範圍。請繼續目前的血糖監測、藥物管理和併發症篩檢計畫。建議<span className="font-bold">每年</span>進行一次 DNlite 腎功能檢測，以及時評估腎病風險。</p></div>
+                      {/* Low Risk */}
+                      <div className="border border-teal-500 rounded-lg overflow-hidden">
+                        <div className="bg-teal-500 text-white text-xs font-bold px-3 py-1.5">低度風險</div>
+                        <div className="p-3 bg-white">
+                          <p className="text-xs text-slate-800 leading-relaxed text-justify">
+                            表示您的腎功能屬於一般狀態。請持續維持目前的血糖監測、藥物管理及併發症檢測計畫。建議<span className="font-bold">每年</span>進行一次遠腎佳 DNlite 腎功能檢測。
+                          </p>
+                        </div>
                       </div>
-                      <div className="border rounded-xl overflow-hidden flex flex-col shadow-sm" style={{ borderColor: COLORS.red }}>
-                        <div className="py-2 px-4 text-white text-sm font-bold flex items-center gap-2" style={{ backgroundColor: COLORS.red }}><AlertTriangle className="w-4 h-4" /> 高度風險</div>
-                        <div className="p-3 flex-1 flex flex-col justify-center" style={{ backgroundColor: COLORS.bgRed }}><p className="text-xs text-slate-700 leading-relaxed text-justify">您的腎功能狀況可能對健康產生負面影響。請盡快聯繫醫師討論並制定個人化的健康管理計畫。透過積極的預防措施，您可以降低腎臟相關併發症的風險。建議<span className="font-bold">每 3 到 6 個月</span>進行一次 DNlite 腎功能檢測。</p></div>
+
+                      {/* High Risk */}
+                      <div className="border border-red-500 rounded-lg overflow-hidden">
+                        <div className="bg-red-500 text-white text-xs font-bold px-3 py-1.5">高度風險</div>
+                        <div className="p-3 bg-white">
+                          <p className="text-xs text-slate-800 leading-relaxed text-justify">
+                            表示您的腎功能屬於對健康不利的狀態，請盡速與您的醫師聯繫、討論及擬定您的健康管理策略。建議<span className="font-bold">每 3-6 個月</span>進行一次遠腎佳 DNlite 腎功能檢測。
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="mt-6 mb-4">
-                    <h3 className="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">References</h3>
-                    <ul className="text-[10px] text-slate-500 list-disc list-inside leading-normal space-y-1"><li>Nat Rev Nephrol. 2021 (17) 740-750.</li><li>Am J Nephrol. 2023 Oct 9. doi: 10.1159/000534514.</li><li>IFU: DNlite-DKD UPTM-FetA ELISA Kit (8103105).</li><li>DNlite-DKD UPTM-FetA ELISA Kit: Technical Notice (TN8103105-04)</li></ul>
+
+                  {/* References Section */}
+                  <div className="mt-4">
+                    <div className="flex items-center mb-2"><div className="w-1 h-3.5 bg-teal-500 mr-2"></div><h3 className="font-bold text-slate-800 text-sm">參考文獻</h3></div>
+                    <ul className="text-[10px] text-slate-500 leading-tight space-y-1 list-none pl-1">
+                      <li>• Nat Rev Nephrol. 2021 (17) 740-750.</li>
+                      <li>• Am J Nephrol. 2023 Oct 9. doi: 10.1159/000534514.</li>
+                      <li>• IFU: DNlite-DKD uPTM-FetA ELISA Kit (8103105).</li>
+                      <li>• DNlite-DKD uPTM-FetA ELISA Kit: Technical Notice (TN8103105-04)</li>
+                    </ul>
                   </div>
                 </div>
-                <div className="h-[60px] px-10 pb-6 bg-white box-border flex flex-col justify-end flex-none"><div className="border-t border-slate-200 pt-2 flex justify-between text-[10px] text-slate-400 font-mono"><span>Generated by DNlite Analysis System V23.1</span><span>頁次 2/2</span></div></div>
               </div>
             </div>
           )
