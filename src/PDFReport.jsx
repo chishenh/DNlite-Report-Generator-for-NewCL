@@ -513,7 +513,7 @@ export const PDFReport = ({ data, logo, companyLogo, inspector }) => {
                                     <View style={styles.tableRow}>
                                         <View style={[styles.tdContainer, { width: '35%', backgroundColor: COLORS.slate100 }]}><Text style={[styles.tdText, { fontWeight: 'bold' }]}>Urine creatinine (UCr)</Text></View>
                                         <View style={[styles.tdContainer, { width: '20%', alignItems: 'center' }]}><Text style={[styles.tdText, { fontWeight: 'bold' }]}>{String(person._disp_ucr || '')}</Text></View>
-                                        <View style={[styles.tdContainer, { width: '15%', alignItems: 'center' }]}><Text style={styles.tdText}>mg/dL</Text></View>
+                                        <View style={[styles.tdContainer, { width: '15%', alignItems: 'center' }]}><Text style={styles.tdText}>mg/mL</Text></View>
                                         <View style={[styles.tdContainer, { width: '30%', borderRightWidth: 0, justifyContent: 'center', alignItems: 'center' }]}><Text style={[styles.tdText, { color: COLORS.slate500, fontSize: 8 }]}>參考區間: 0.60-2.50</Text></View>
                                     </View>
                                     <View style={[styles.tableRow, { backgroundColor: 'white' }]}>

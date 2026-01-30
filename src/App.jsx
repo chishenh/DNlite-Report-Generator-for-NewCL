@@ -603,7 +603,7 @@ export default function App() {
                         <tr>
                           <td className="border border-slate-300 p-2 font-bold text-slate-900" style={{ backgroundColor: '#dce3eb' }}>Urine creatinine (UCr)</td>
                           <td className="border border-slate-300 p-2 font-bold text-center">{person._disp_ucr}</td>
-                          <td className="border border-slate-300 p-2 text-center">mg/dL</td>
+                          <td className="border border-slate-300 p-2 text-center">mg/mL</td>
                           <td className="border border-slate-300 p-2 text-slate-500 text-center"><span className="text-xs">參考區間: 0.60-2.50</span></td>
                         </tr>
                         <tr style={{ backgroundColor: isRisk ? COLORS.bgRed : COLORS.bgTeal }}>
