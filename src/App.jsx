@@ -158,6 +158,9 @@ export default function App() {
   const [progress, setProgress] = useState("");
 
 
+  const [isSampleData, setIsSampleData] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState("");
+
   const [logo, setLogo] = useState(safeStorage.getItem('dnlite_report_logo') || logoDnlite);
   const [companyLogo, setCompanyLogo] = useState(safeStorage.getItem('dnlite_company_logo_v2') || logoNewcl);
 
@@ -336,6 +339,8 @@ export default function App() {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    setUploadedFileName(file.name);
+    setIsSampleData(false);
     const reader = new FileReader();
     reader.readAsArrayBuffer(file);
     reader.onload = (evt) => {
@@ -402,6 +407,8 @@ export default function App() {
     // Updated sample without "Age" (col 1) and "Report Date" (which was not in sample but headers)
     // Old Sample: ["姓名", "年齡", "性別", "出生日期", "身分證字號", "送檢單位", "採檢日期", "病歷號碼", "uPTM-FetA", "UCr", "醫事檢驗師", "報告簽署人"]
     // New Sample: ["姓名", "性別", "出生日期", "身分證字號", "送檢單位", "採檢日期", "病歷號碼", "uPTM-FetA", "UCr", "醫事檢驗師", "報告簽署人"]
+    setIsSampleData(true);
+    setUploadedFileName("Sample_Data");
     const sample = [
       ["送檢單位", "採檢日期", "報告編號", "姓名", "病歷號碼", "性別", "出生日期", "身分證字號", "uPTM-FetA", "UCr", "醫事檢驗師", "報告簽署人"],
       ["XXX", "2024-12-24", "1001", "陳大文 (一般)", "88001", "男", "1980/5/20", "A123456789", "100", "1.0", "林翠仙", "古琪茗"],
@@ -435,6 +442,30 @@ export default function App() {
     finally { setIsGenerating(false); setProgress(""); }
   };
 
+  const logDownloadStats = async (count, fileName, orgName) => {
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxRVLGFptG942m5X5MwC4HQzSCxOgCFv6IS7ntCZRQo4Nnoa6CoGlQHDRXSDxFnsABflw/exec";
+
+    try {
+      const payload = {
+        count: count,
+        fileName: fileName,
+        orgName: orgName || "Unknown"
+      };
+
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors", // Important for Google Apps Script
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      console.log("Download stats logged successfully");
+    } catch (error) {
+      console.error("Failed to log download stats:", error);
+    }
+  };
+
   const handleDownloadZip = async () => {
     setIsGenerating(true);
     const zip = new JSZip();
@@ -449,6 +480,13 @@ export default function App() {
       const d = String(now.getDate()).padStart(2, '0');
       const reportDate = `${y}-${m}-${d}`;
       const dateStr = `${y}${m}${d}`;
+
+      // Tracking
+      if (!isSampleData) {
+        // Fire and forget
+        const orgName = data[0]?._unit || "Unknown";
+        logDownloadStats(data.length, uploadedFileName, orgName);
+      }
 
       for (let i = 0; i < data.length; i++) {
         const person = data[i];
