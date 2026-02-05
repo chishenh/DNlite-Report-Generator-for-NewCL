@@ -16,6 +16,8 @@ import stamp2 from './assets/stamps/stamp_2.png';
 import stamp3 from './assets/stamps/stamp_3.png';
 import stamp4 from './assets/stamps/stamp_4.png';
 
+console.log("App Module Loaded");
+
 const STAMP_OPTIONS = {
   "林翠仙": stamp0,
   "古琪茗": stamp1,
